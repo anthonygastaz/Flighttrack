@@ -154,7 +154,14 @@ export function SeatSelectionStep({
             </div>
           </div>
 
-          <div className="touch-pan-x overflow-x-auto pb-1">
+          {/*
+            Allow BOTH axes here: horizontal pans scroll the seat map (when it
+            overflows), while vertical pans bubble up to the modal's scroll
+            container. Using `pan-x` alone locked the gesture to horizontal and
+            broke vertical scrolling of the modal when a swipe started on the
+            seat grid.
+          */}
+          <div className="overflow-x-auto pb-1 [touch-action:pan-x_pan-y]">
             <SeatMap
               section={section}
               occupied={occupied}
