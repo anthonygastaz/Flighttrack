@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  eslint: {
+    // Lint locally via `npm run lint`; skip during Vercel builds because
+    // production installs omit devDependencies (eslint plugins).
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       // Airline logo CDN (used for booking detail pages).
