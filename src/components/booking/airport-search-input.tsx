@@ -61,7 +61,9 @@ export function AirportSearchInput({
 
   useEffect(() => {
     if (!value) {
-      setQuery("");
+      if (!open) {
+        setQuery("");
+      }
       return;
     }
     if (!open) {
@@ -150,12 +152,14 @@ export function AirportSearchInput({
               onChange("");
             }
           }}
-          onFocus={() => {
+          onFocus={(event) => {
             if (value) {
               setQuery("");
               onChange("");
             }
-            setOpen(false);
+            if (query) {
+              event.currentTarget.select();
+            }
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}

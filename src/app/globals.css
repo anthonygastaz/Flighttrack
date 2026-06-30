@@ -179,6 +179,8 @@
 
   /* Mobile seat modal: momentum scrolling inside the dialog */
   .seat-modal-scroll {
+    position: relative;
+    height: 100%;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-y;

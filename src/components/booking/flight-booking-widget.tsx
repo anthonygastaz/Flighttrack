@@ -88,6 +88,18 @@ export function FlightBookingWidget() {
     [confirmedBooking],
   );
 
+  const seatSelectionStep = (
+    <SeatSelectionStep
+      travelClass={travelClass}
+      adults={adults}
+      value={selectedSeats}
+      onChange={(seats) => form.setValue("seats", seats, { shouldDirty: true })}
+      onContinue={onSeatsContinue}
+      onBack={() => setStep("search")}
+      error={form.formState.errors.seats?.message}
+    />
+  );
+
   const seatSelectionField = (
     <FormField
       control={form.control}
@@ -148,7 +160,7 @@ export function FlightBookingWidget() {
     <Form {...form}>
       <div className="w-full overflow-hidden rounded-xl border border-white/10 bg-[#0a1628] shadow-2xl">
         <SeatSelectionModal open={showSeatModal} onClose={() => setStep("search")}>
-          {seatSelectionField}
+          {seatSelectionStep}
         </SeatSelectionModal>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
