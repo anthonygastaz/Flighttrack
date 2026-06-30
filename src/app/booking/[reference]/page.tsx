@@ -9,6 +9,9 @@ import { getServices } from "@/core/container";
 import { normalizeBookingReference } from "@/core/services/booking-reference";
 import { isSupabaseConfigured } from "@/lib/env";
 
+// Booking details reflect live data and must always render at request time.
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ reference: string }>;
 }

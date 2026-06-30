@@ -8,12 +8,26 @@
 import { APP_NAME } from "@/lib/brand";
 
 function required(name: string, value: string | undefined): string {
-  if (!value || value.length === 0) {
+  const cleaned = stripWhitespace(value ?? "");
+  if (cleaned.length === 0) {
     throw new Error(
       `Missing required environment variable: ${name}. See .env.example for setup.`,
     );
   }
-  return value;
+  return cleaned;
+}
+
+/**
+ * Remove all whitespace (spaces, tabs, newlines) from a secret value.
+ *
+ * Supabase URLs and JWT keys are single unbroken strings, but dashboards and
+ * clipboards frequently introduce line breaks when copying the long
+ * service-role key. Leaving them in produces an invalid HTTP header value
+ * ("Headers.set: ... is an invalid header value") at request time, so we
+ * defensively strip them here.
+ */
+function stripWhitespace(value: string): string {
+  return value.replace(/\s+/g, "");
 }
 
 function isPlaceholder(value: string): boolean {
@@ -26,9 +40,9 @@ function isPlaceholder(value: string): boolean {
 
 /** Public configuration — safe to reference from client components. */
 export const publicEnv = {
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-  appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  supabaseUrl: stripWhitespace(process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""),
+  supabaseAnonKey: stripWhitespace(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""),
+  appUrl: (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").trim(),
 } as const;
 
 /**
