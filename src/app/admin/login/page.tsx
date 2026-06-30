@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LoginForm } from "./login-form";

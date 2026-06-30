@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { type Result, err, ok } from "@/core/domain/result";
+import { type Result, err } from "@/core/domain/result";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createServerSupabase } from "@/lib/supabase/server";
