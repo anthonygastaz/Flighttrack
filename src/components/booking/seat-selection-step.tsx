@@ -14,11 +14,11 @@ import {
   type CabinSection,
 } from "@/lib/seats/cabin-layout";
 import {
-  SKY_BLUE,
-  SKY_BLUE_DARK,
-  SKY_BLUE_HOVER,
-  SKY_BLUE_LIGHT,
-  SKY_BLUE_MUTED,
+  BRAND_GREEN,
+  BRAND_GREEN_DARK,
+  BRAND_GREEN_HOVER,
+  BRAND_GREEN_LIGHT,
+  BRAND_GREEN_MUTED,
 } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
@@ -120,7 +120,7 @@ export function SeatSelectionStep({
                     : "text-zinc-500 hover:text-zinc-900",
                 )}
                 style={
-                  activeSectionId === s.id ? { backgroundColor: SKY_BLUE } : undefined
+                  activeSectionId === s.id ? { backgroundColor: BRAND_GREEN } : undefined
                 }
               >
                 {s.id}
@@ -137,7 +137,7 @@ export function SeatSelectionStep({
             </p>
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span className="flex items-center gap-1.5">
-                <span className="size-2.5 rounded-full" style={{ backgroundColor: SKY_BLUE }} />
+                <span className="size-2.5 rounded-full" style={{ backgroundColor: BRAND_GREEN }} />
                 Free
               </span>
               <span className="flex items-center gap-1.5">
@@ -146,8 +146,8 @@ export function SeatSelectionStep({
               </span>
               <span className="flex items-center gap-1.5">
                 <span
-                  className="size-2.5 rounded-full ring-2 ring-[#4D94FF] ring-offset-1"
-                  style={{ backgroundColor: SKY_BLUE_DARK }}
+                  className="size-2.5 rounded-full ring-2 ring-brand-green-light ring-offset-1"
+                  style={{ backgroundColor: BRAND_GREEN_DARK }}
                 />
                 Yours
               </span>
@@ -174,7 +174,7 @@ export function SeatSelectionStep({
         {value.length > 0 && (
           <p className="text-sm text-zinc-600">
             Selected:{" "}
-            <span className="font-medium" style={{ color: SKY_BLUE }}>
+            <span className="font-medium" style={{ color: BRAND_GREEN }}>
               {value.join(", ")}
             </span>
           </p>
@@ -196,7 +196,7 @@ export function SeatSelectionStep({
           onClick={onContinue}
           disabled={value.length !== adults}
           className="h-12 rounded-full px-8 text-white hover:opacity-90"
-          style={{ backgroundColor: SKY_BLUE }}
+          style={{ backgroundColor: BRAND_GREEN }}
         >
           Continue to passenger details
         </Button>
@@ -280,20 +280,20 @@ function SeatButton({ seatId, isOccupied, isSelected, onToggle }: SeatButtonProp
         "group relative flex h-9 w-8 flex-col items-center justify-end rounded-md border pb-0.5 transition-all sm:h-10 sm:w-9",
         isOccupied && "cursor-not-allowed border-zinc-200 bg-zinc-200",
         !isOccupied && !isSelected && "hover:shadow-md",
-        isSelected && "ring-2 ring-[#4D94FF] ring-offset-1",
+        isSelected && "ring-2 ring-brand-green-light ring-offset-1",
       )}
       style={
         isOccupied
           ? undefined
           : isSelected
-            ? { backgroundColor: SKY_BLUE_DARK, borderColor: SKY_BLUE_DARK }
-            : { backgroundColor: SKY_BLUE, borderColor: SKY_BLUE_DARK }
+            ? { backgroundColor: BRAND_GREEN_DARK, borderColor: BRAND_GREEN_DARK }
+            : { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN_DARK }
       }
       onMouseEnter={(e) => {
-        if (!isOccupied && !isSelected) e.currentTarget.style.backgroundColor = SKY_BLUE_HOVER;
+        if (!isOccupied && !isSelected) e.currentTarget.style.backgroundColor = BRAND_GREEN_HOVER;
       }}
       onMouseLeave={(e) => {
-        if (!isOccupied && !isSelected) e.currentTarget.style.backgroundColor = SKY_BLUE;
+        if (!isOccupied && !isSelected) e.currentTarget.style.backgroundColor = BRAND_GREEN;
       }}
     >
       <span
@@ -302,8 +302,8 @@ function SeatButton({ seatId, isOccupied, isSelected, onToggle }: SeatButtonProp
           isOccupied
             ? { backgroundColor: "#d4d4d8" }
             : isSelected
-              ? { backgroundColor: SKY_BLUE_MUTED }
-              : { backgroundColor: SKY_BLUE_LIGHT }
+              ? { backgroundColor: BRAND_GREEN_MUTED }
+              : { backgroundColor: BRAND_GREEN_LIGHT }
         }
       />
       <span className="sr-only">{seatId}</span>

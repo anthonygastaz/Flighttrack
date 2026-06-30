@@ -26,11 +26,11 @@ export function DealThumbnail({
     return (
       <div
         className={cn(
-          "relative flex items-center justify-center bg-gradient-to-br from-brand-sky/20 to-brand-navy/10",
+          "relative flex items-center justify-center bg-gradient-to-br from-brand-green/20 to-brand-navy/10",
           className,
         )}
       >
-        <MapPin className="size-6 text-brand-sky/70" aria-hidden />
+        <MapPin className="size-6 text-brand-green/70" aria-hidden />
         <span className="sr-only">{city}</span>
       </div>
     );

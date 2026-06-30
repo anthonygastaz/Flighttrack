@@ -40,6 +40,8 @@ import {
   createBookingAction,
   updateBookingAction,
 } from "@/server/actions/booking-actions";
+import { FlightLegFields } from "@/components/admin/flight-leg-fields";
+import { flightSegmentsForStops } from "@/lib/validation/flight-segment-form";
 
 interface BookingFormProps {
   bookingId?: string;
@@ -61,6 +63,10 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
     control: form.control,
     name: "layovers",
   });
+  const { fields: flightSegmentFields, replace: replaceFlightSegments } = useFieldArray({
+    control: form.control,
+    name: "flightSegments",
+  });
 
   useEffect(() => {
     const current = form.getValues("layovers") ?? [];
@@ -77,6 +83,40 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
 
     replaceLayovers(current.slice(0, stops));
   }, [stops, form, replaceLayovers]);
+
+  useEffect(() => {
+    if (stops === 0) {
+      if ((form.getValues("flightSegments") ?? []).length > 0) {
+        replaceFlightSegments([]);
+      }
+      return;
+    }
+
+    const segmentCount = stops + 1;
+    const current = form.getValues("flightSegments") ?? [];
+    if (current.length === segmentCount) return;
+
+    const route = form.getValues();
+    replaceFlightSegments(
+      flightSegmentsForStops(stops, current, {
+        airline: route.airline,
+        airlineIata: route.airlineIata ?? "",
+        flightNumber: route.flightNumber,
+        departureAirport: route.departureAirport,
+        arrivalAirport: route.arrivalAirport,
+        departureCity: route.departureCity ?? "",
+        arrivalCity: route.arrivalCity ?? "",
+        departureTime: route.departureTime,
+        arrivalTime: route.arrivalTime,
+        departureTerminal: route.departureTerminal ?? "",
+        arrivalTerminal: route.arrivalTerminal ?? "",
+        departureGate: route.departureGate ?? "",
+        arrivalGate: route.arrivalGate ?? "",
+        seat: route.seat ?? "",
+        layoverAirports: (route.layovers ?? []).map((layover) => layover.airport),
+      }),
+    );
+  }, [stops, form, replaceFlightSegments]);
 
   function onSubmit(values: BookingFormInput) {
     startTransition(async () => {
@@ -112,6 +152,30 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <section className="space-y-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
+            Booking details
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="bookedOn"
+              render={({ field }) => (
+                <FormItem className="max-w-md">
+                  <FormLabel>Booking date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <p className="text-xs text-zinc-500">
+                    Shown to passengers as &quot;Booked on&quot; on the tracking page.
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </section>
+
         <section className="space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
             Booking code
@@ -403,80 +467,100 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
 
           {stops > 0 ? (
             <div className="space-y-4">
-              {layoverFields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="rounded-xl border border-zinc-200/80 bg-zinc-50/60 p-4"
-                >
-                  <p className="mb-3 text-sm font-medium text-zinc-700">Layover {index + 1}</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name={`layovers.${index}.airport`}
-                      render={({ field: layoverField }) => (
-                        <FormItem>
-                          <FormLabel>Layover airport</FormLabel>
-                          <FormControl>
-                            <Input placeholder="DXB" className="uppercase" {...layoverField} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`layovers.${index}.city`}
-                      render={({ field: layoverField }) => (
-                        <FormItem>
-                          <FormLabel>Layover city</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Dubai" {...layoverField} value={layoverField.value ?? ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`layovers.${index}.durationHours`}
-                      render={({ field: layoverField }) => (
-                        <FormItem>
-                          <FormLabel>Layover hours</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={48}
-                              {...layoverField}
-                              value={layoverField.value ?? 0}
-                              onChange={(event) => layoverField.onChange(event.target.value)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`layovers.${index}.durationMinutes`}
-                      render={({ field: layoverField }) => (
-                        <FormItem>
-                          <FormLabel>Layover minutes</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min={0}
-                              max={59}
-                              {...layoverField}
-                              value={layoverField.value ?? 0}
-                              onChange={(event) => layoverField.onChange(event.target.value)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <p className="text-sm text-zinc-500">
+                Enter flight details for each leg of the journey, then layover information between
+                connections.
+              </p>
+              {Array.from({ length: stops + 1 }).map((_, legIndex) => (
+                <div key={`journey-leg-${legIndex}`} className="space-y-4">
+                  <div className="rounded-xl border border-zinc-200/80 bg-white p-4">
+                    <p className="mb-3 text-sm font-semibold text-zinc-800">
+                      Flight leg {legIndex + 1}
+                    </p>
+                    {flightSegmentFields[legIndex] ? (
+                      <FlightLegFields control={form.control} index={legIndex} />
+                    ) : null}
                   </div>
+
+                  {legIndex < stops && layoverFields[legIndex] ? (
+                    <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-4">
+                      <p className="mb-3 text-sm font-medium text-amber-900">
+                        Layover {legIndex + 1}
+                      </p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name={`layovers.${legIndex}.airport`}
+                          render={({ field: layoverField }) => (
+                            <FormItem>
+                              <FormLabel>Layover airport</FormLabel>
+                              <FormControl>
+                                <Input placeholder="DXB" className="uppercase" {...layoverField} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`layovers.${legIndex}.city`}
+                          render={({ field: layoverField }) => (
+                            <FormItem>
+                              <FormLabel>Layover city</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Dubai"
+                                  {...layoverField}
+                                  value={layoverField.value ?? ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`layovers.${legIndex}.durationHours`}
+                          render={({ field: layoverField }) => (
+                            <FormItem>
+                              <FormLabel>Layover hours</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={48}
+                                  {...layoverField}
+                                  value={layoverField.value ?? 0}
+                                  onChange={(event) => layoverField.onChange(event.target.value)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`layovers.${legIndex}.durationMinutes`}
+                          render={({ field: layoverField }) => (
+                            <FormItem>
+                              <FormLabel>Layover minutes</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={59}
+                                  {...layoverField}
+                                  value={layoverField.value ?? 0}
+                                  onChange={(event) => layoverField.onChange(event.target.value)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -628,90 +712,6 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
 
         <section className="space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-            Flight price details
-          </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="currency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Currency</FormLabel>
-                  <FormControl>
-                    <Input placeholder="USD" className="uppercase" {...field} value={field.value ?? "USD"} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="fareSubtotal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fare / fee subtotal</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      placeholder="6040.99"
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(event) => field.onChange(event.target.value)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="taxesFees"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Taxes &amp; fees</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      placeholder="543.69"
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(event) => field.onChange(event.target.value)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="totalPrice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Total price</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      placeholder="6584.68"
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(event) => field.onChange(event.target.value)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
             Details
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -835,7 +835,7 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
           <Button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-brand-sky px-6 text-white hover:bg-brand-sky-hover"
+            className="rounded-full bg-brand-green px-6 text-white hover:bg-brand-green-hover"
           >
             {pending && <Loader2 className="size-4 animate-spin" />}
             {mode === "create" ? "Create booking" : "Save changes"}

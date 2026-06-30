@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { SKY_BLUE } from "@/lib/brand-colors";
+import { BRAND_GREEN } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
 interface AirplaneSilhouetteProps {
@@ -58,7 +58,7 @@ export function AirplaneSilhouette({ className, activeSection = 1 }: AirplaneSil
                   left: zone.left,
                   width: zone.width,
                   ...(isActive
-                    ? { borderColor: SKY_BLUE, backgroundColor: `${SKY_BLUE}1a` }
+                    ? { borderColor: BRAND_GREEN, backgroundColor: `${BRAND_GREEN}1a` }
                     : {}),
                 }}
               />

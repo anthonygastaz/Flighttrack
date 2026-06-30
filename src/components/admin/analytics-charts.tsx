@@ -20,7 +20,7 @@ import type { AnalyticsOverview } from "@/core/domain/analytics";
 import { nonZeroStatuses } from "@/core/repositories/analytics-repository";
 import { Calendar, Plane, Search, TrendingUp } from "lucide-react";
 
-const CHART_COLORS = ["#0055FF", "#FF5500", "#4D94FF", "#051024", "#80B3FF", "#0046E0", "#0041CC"];
+const CHART_COLORS = ["#00A651", "#FF5500", "#4DD088", "#051024", "#80E0AA", "#008F45", "#007A3D"];
 
 interface AnalyticsChartsProps {
   data: AnalyticsOverview;
@@ -78,7 +78,7 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
                       borderRadius: "8px",
                     }}
                   />
-                  <Bar dataKey="count" fill="#0055FF" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#00A651" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

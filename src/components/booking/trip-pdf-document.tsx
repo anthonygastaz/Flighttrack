@@ -100,8 +100,8 @@ export const TripPdfDocument = forwardRef<HTMLDivElement, TripPdfDocumentProps>(
         className="bg-white text-slate-900"
         style={{ width: PDF_CAPTURE_WIDTH_PX, maxWidth: PDF_CAPTURE_WIDTH_PX }}
       >
-        <header className="border-b-2 border-[#0055FF] px-8 pb-6 pt-8">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-[#0055FF]">
+        <header className="border-b-2 border-brand-green px-8 pb-6 pt-8">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-brand-green">
             Review your trip
           </p>
           <p className="mt-4 text-[14px] text-slate-600">Booking Code:</p>
@@ -114,11 +114,6 @@ export const TripPdfDocument = forwardRef<HTMLDivElement, TripPdfDocumentProps>(
           </div>
           <h1 className="mt-6 text-[24px] font-bold leading-tight text-slate-900">{trip.routeTitle}</h1>
           <p className="mt-2 text-[14px] text-slate-600">{trip.departureDateLabel}</p>
-          {trip.pricing?.totalPriceLabel ? (
-            <p className="mt-3 text-[16px] font-semibold text-[#0055FF]">
-              Total: {trip.pricing.totalPriceLabel}
-            </p>
-          ) : null}
         </header>
 
         <div className="px-8 py-6">
@@ -171,22 +166,6 @@ export const TripPdfDocument = forwardRef<HTMLDivElement, TripPdfDocumentProps>(
             {trip.email ? <PdfRow label="Email" value={trip.email} /> : null}
             {trip.phone ? <PdfRow label="Phone" value={trip.phone} /> : null}
           </PdfSection>
-
-          {trip.pricing ? (
-            <PdfSection title={`Price details (${trip.pricing.currency})`}>
-              {trip.pricing.lines.map((line) => (
-                <PdfRow key={line.label} label={line.label} value={line.amountLabel ?? "—"} />
-              ))}
-              {trip.pricing.totalPriceLabel ? (
-                <div className="mt-3 flex items-center justify-between rounded-lg bg-[#0055FF]/10 px-4 py-3">
-                  <span className="text-[14px] font-semibold text-slate-900">Total price</span>
-                  <span className="text-[18px] font-bold text-[#0055FF]">
-                    {trip.pricing.totalPriceLabel}
-                  </span>
-                </div>
-              ) : null}
-            </PdfSection>
-          ) : null}
 
           {trip.billing ? (
             <PdfSection title="Billing information">

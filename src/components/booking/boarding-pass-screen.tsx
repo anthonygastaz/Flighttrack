@@ -110,7 +110,7 @@ export function BoardingPassScreen({
           <Button
             type="button"
             onClick={() => setETicketOpen(true)}
-            className="h-12 w-full rounded-full bg-[#0055FF] text-base font-medium text-white hover:bg-[#0046E0]"
+            className="h-12 w-full rounded-full bg-brand-green text-base font-medium text-white hover:bg-brand-green-hover"
           >
             <Ticket className="mr-2 size-5" />
             View E-Ticket

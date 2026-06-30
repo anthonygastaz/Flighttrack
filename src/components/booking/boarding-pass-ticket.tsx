@@ -94,7 +94,7 @@ export const BoardingPassTicket = forwardRef<HTMLDivElement, BoardingPassTicketP
               </div>
 
               <div className="flex flex-col items-center px-1 pt-2">
-                <Plane className="size-4 rotate-90 text-[#0055FF]" />
+                <Plane className="size-4 rotate-90 text-brand-green" />
                 <div className="my-1.5 flex w-16 items-center gap-0.5">
                   <span className="h-px flex-1 border-t border-dashed border-zinc-300" />
                 </div>

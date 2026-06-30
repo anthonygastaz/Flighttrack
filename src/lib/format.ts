@@ -27,6 +27,22 @@ export function formatRelative(iso: string): string {
   }
 }
 
+/** Convert ISO to date input value (YYYY-MM-DD). */
+export function toDateInputValue(iso: string): string {
+  try {
+    const date = parseISO(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  } catch {
+    return "";
+  }
+}
+
+/** Convert date input (YYYY-MM-DD) to ISO, using local noon to avoid timezone shifts. */
+export function dateInputToIso(dateValue: string): string {
+  return new Date(`${dateValue}T12:00:00`).toISOString();
+}
+
 /** Convert ISO to datetime-local input value. */
 export function toDatetimeLocalValue(iso: string): string {
   try {

@@ -16,7 +16,7 @@ export function StatCard({ title, value, description, icon: Icon, trend, classNa
     <Card className={cn("admin-panel border-zinc-200/80", className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-zinc-500">{title}</CardTitle>
-        <div className="flex size-9 items-center justify-center rounded-full bg-brand-sky/10 text-brand-sky">
+        <div className="flex size-9 items-center justify-center rounded-full bg-brand-green/10 text-brand-green">
           <Icon className="size-4" />
         </div>
       </CardHeader>

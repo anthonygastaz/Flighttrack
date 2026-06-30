@@ -124,7 +124,7 @@ export default async function AdminDashboardPage() {
                     >
                       <Link href={`/admin/bookings/${booking.id}/edit`}>Edit</Link>
                     </Button>
-                    <Button asChild variant="ghost" size="sm" className="rounded-full text-brand-sky">
+                    <Button asChild variant="ghost" size="sm" className="rounded-full text-brand-green">
                       <Link href={`/booking/${booking.bookingReference}`}>View</Link>
                     </Button>
                   </div>

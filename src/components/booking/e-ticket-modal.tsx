@@ -63,7 +63,7 @@ export function ETicketModal({ open, onOpenChange, data }: ETicketModalProps) {
           type="button"
           onClick={downloadTicket}
           disabled={downloading}
-          className="h-11 w-full rounded-full bg-[#0055FF] text-white hover:bg-[#0046E0]"
+          className="h-11 w-full rounded-full bg-brand-green text-white hover:bg-brand-green-hover"
         >
           {downloading ? (
             <Loader2 className="size-4 animate-spin" />

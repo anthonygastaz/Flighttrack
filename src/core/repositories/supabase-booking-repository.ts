@@ -137,7 +137,12 @@ export class SupabaseBookingRepository implements BookingRepository {
       let nextRow: BookingInsert = row;
 
       if (needsLayoverStrip) {
-        const { stops: _stops, layovers: _layovers, ...withoutLayovers } = nextRow;
+        const {
+          stops: _stops,
+          layovers: _layovers,
+          flight_segments: _flightSegments,
+          ...withoutLayovers
+        } = nextRow;
         nextRow = withoutLayovers as BookingInsert;
       }
 

@@ -10,7 +10,6 @@ import type { TravelClass } from "@/core/domain/enums";
 import { BOOKING_STATUS_LABELS, TRAVEL_CLASS_LABELS } from "@/core/domain/enums";
 import type { FlightStatusResult } from "@/core/domain/flight";
 import { findAirportByIata } from "@/lib/airports/search";
-import { formatMoney } from "@/lib/format";
 
 export interface TripBillingDetails {
   name: string | null;
@@ -24,19 +23,6 @@ export interface TripBillingDetails {
   country: string | null;
   paymentMethod: string | null;
   formattedAddress: string | null;
-}
-
-export interface TripPriceLine {
-  label: string;
-  amountLabel: string | null;
-}
-
-export interface TripPriceDetails {
-  currency: string;
-  fareSubtotalLabel: string | null;
-  taxesFeesLabel: string | null;
-  totalPriceLabel: string | null;
-  lines: TripPriceLine[];
 }
 
 export interface TripBaggageItem {
@@ -105,7 +91,6 @@ export interface TripDetailsData {
   itinerary: TripItineraryItem[];
   liveFlight: FlightStatusResult | null;
   billing: TripBillingDetails | null;
-  pricing: TripPriceDetails | null;
 }
 
 const AIRCRAFT_TYPES = ["Airbus A321", "Boeing 777-300ER", "Boeing 787-9", "Airbus A350-900"];
@@ -197,6 +182,51 @@ function baggageItemsForBooking(booking: Booking): TripBaggageItem[] {
 }
 
 function buildItinerary(booking: Booking): TripItineraryItem[] {
+  if (booking.flightSegments.length > 0) {
+    const items: TripItineraryItem[] = [];
+
+    booking.flightSegments.forEach((segment, index) => {
+      const fromMeta = airportLabel(segment.departureAirport, segment.departureCity);
+      const toMeta = airportLabel(segment.arrivalAirport, segment.arrivalCity);
+      const departure = parseISO(segment.departureTime);
+      const arrival = parseISO(segment.arrivalTime);
+
+      items.push({
+        kind: "flight",
+        flightNumber: segment.flightNumber,
+        airline: segment.airline,
+        airlineIata: segment.airlineIata,
+        fromAirport: segment.departureAirport,
+        fromCity: fromMeta.city,
+        fromAirportName: fromMeta.name,
+        toAirport: segment.arrivalAirport,
+        toCity: toMeta.city,
+        toAirportName: toMeta.name,
+        departureTime: segment.departureTime,
+        arrivalTime: segment.arrivalTime,
+        durationLabel: durationLabel(differenceInMinutes(arrival, departure)),
+        travelClass: TRAVEL_CLASS_LABELS[booking.travelClass],
+        aircraft: segment.aircraft ?? aircraftForRoute(segment.departureAirport, segment.arrivalAirport, index),
+        amenities: amenitiesForClass(booking.travelClass),
+      });
+
+      const layover = booking.layovers[index];
+      if (layover) {
+        const layoverMeta = airportLabel(layover.airport, layover.city);
+        items.push({
+          kind: "layover",
+          airport: layover.airport,
+          city: layoverMeta.city,
+          airportName: layoverMeta.name,
+          durationLabel: formatLayoverDuration(layover.durationMinutes),
+          durationMinutes: layover.durationMinutes,
+        });
+      }
+    });
+
+    return items;
+  }
+
   const departure = parseISO(booking.departureTime);
   const arrival = parseISO(booking.arrivalTime);
   const totalMinutes = Math.max(differenceInMinutes(arrival, departure), 0);
@@ -306,33 +336,6 @@ function buildBillingDetails(booking: Booking): TripBillingDetails | null {
   };
 }
 
-function buildPriceDetails(booking: Booking): TripPriceDetails | null {
-  const currency = booking.currency || "USD";
-  const fareSubtotalLabel = formatMoney(booking.fareSubtotal, currency);
-  const taxesFeesLabel = formatMoney(booking.taxesFees, currency);
-  const totalPriceLabel = formatMoney(booking.totalPrice, currency);
-
-  if (!fareSubtotalLabel && !taxesFeesLabel && !totalPriceLabel) {
-    return null;
-  }
-
-  const lines: TripPriceLine[] = [];
-  if (fareSubtotalLabel) {
-    lines.push({ label: "Fare / fee subtotal", amountLabel: fareSubtotalLabel });
-  }
-  if (taxesFeesLabel) {
-    lines.push({ label: "Taxes & fees", amountLabel: taxesFeesLabel });
-  }
-
-  return {
-    currency,
-    fareSubtotalLabel,
-    taxesFeesLabel,
-    totalPriceLabel,
-    lines,
-  };
-}
-
 /** Map a booking into the rich trip-details view model. */
 export function tripDetailsFromBooking(
   booking: Booking,
@@ -383,6 +386,5 @@ export function tripDetailsFromBooking(
     itinerary: buildItinerary(booking),
     liveFlight: liveFlight ?? null,
     billing: buildBillingDetails(booking),
-    pricing: buildPriceDetails(booking),
   };
 }

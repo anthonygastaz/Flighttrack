@@ -72,7 +72,7 @@ export function BookingsTable({ bookings, total, page, pageCount, search }: Book
         <Input
           placeholder="Search by reference, name, or flight…"
           value={query}
-          className="max-w-sm rounded-full border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:ring-brand-sky"
+          className="max-w-sm rounded-full border-white/20 bg-white/10 text-white placeholder:text-white/40 focus-visible:ring-brand-green"
           onChange={(e) => setQuery(e.target.value)}
         />
         <DemoBookingActions />
@@ -103,7 +103,7 @@ export function BookingsTable({ bookings, total, page, pageCount, search }: Book
                   <TableCell>
                     <Link
                       href={`/booking/${booking.bookingReference}`}
-                      className="font-mono font-medium text-brand-sky hover:underline"
+                      className="font-mono font-medium text-brand-green hover:underline"
                     >
                       {booking.bookingReference}
                     </Link>

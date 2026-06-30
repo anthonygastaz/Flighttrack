@@ -53,9 +53,18 @@ const config: Config = {
             light: "#0d1a30",
           },
           orange: "#FF5500",
+          green: {
+            DEFAULT: "#00A651",
+            hover: "#008F45",
+            dark: "#007A3D",
+            light: "#4DD088",
+            muted: "#80E0AA",
+            glow: "#6EE0A8",
+          },
+          /** @deprecated Use brand.green */
           sky: {
-            DEFAULT: "#0055FF",
-            hover: "#0046E0",
+            DEFAULT: "#00A651",
+            hover: "#008F45",
           },
         },
       },

@@ -4,7 +4,7 @@ import type {
   FlightStatus,
   TravelClass,
 } from "@/core/domain/enums";
-import type { Layover } from "@/core/domain/booking";
+import type { BookingFlightSegment, Layover } from "@/core/domain/booking";
 
 /**
  * Database schema types matching the SQL migrations. Hand-authored to stay in
@@ -61,6 +61,7 @@ export interface BookingRow {
   notes: string | null;
   stops: number;
   layovers: Layover[];
+  flight_segments: BookingFlightSegment[];
   created_at: string;
   updated_at: string;
 }
@@ -107,6 +108,7 @@ export type BookingInsert = {
   notes?: string | null;
   stops?: number;
   layovers?: Layover[];
+  flight_segments?: BookingFlightSegment[];
   created_at?: string;
   updated_at?: string;
 };
@@ -152,6 +154,9 @@ export type BookingUpdate = {
   notes?: string | null;
   stops?: number;
   layovers?: Layover[];
+  flight_segments?: BookingFlightSegment[];
+  created_at?: string;
+  updated_at?: string;
 };
 
 export interface FlightRow {

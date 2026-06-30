@@ -403,7 +403,7 @@ function OriginPicker({
       <DropdownMenuContent align="center" className="w-72 p-2">
         {locationLabel && (
           <p className="mb-2 flex items-center gap-1.5 px-2 text-xs text-zinc-500">
-            <MapPin className="size-3.5 text-brand-sky" />
+            <MapPin className="size-3.5 text-brand-green" />
             Detected near {locationLabel}
           </p>
         )}

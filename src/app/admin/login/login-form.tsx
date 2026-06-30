@@ -32,7 +32,7 @@ export function LoginForm({ disabled = false }: { disabled?: boolean }) {
       )}
       <Button
         type="submit"
-        className="h-11 w-full rounded-full bg-brand-sky text-white hover:bg-brand-sky-hover"
+        className="h-11 w-full rounded-full bg-brand-green text-white hover:bg-brand-green-hover"
         disabled={pending || disabled}
       >
         {pending ? "Signing in…" : "Sign in"}

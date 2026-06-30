@@ -60,6 +60,7 @@ export function buildPublicBooking(input: PublicBookingValues): CreateBookingInp
     notes: input.tripType === "round-trip" ? `Return requested: ${input.returnDate}` : null,
     stops: 0,
     layovers: [],
+    flightSegments: [],
     billingName: null,
     billingEmail: null,
     billingPhone: null,

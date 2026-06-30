@@ -42,8 +42,8 @@ export function formatBookingPersistenceError(error: unknown): string {
     return "Database update required: booking references are now 13 digits. In the Supabase SQL editor, run supabase/migrations/0003_booking_reference_13_digits.sql.";
   }
 
-  if (isMissingColumnError(pgError, ["stops", "layovers"])) {
-    return "Database update required: layover fields are missing. In the Supabase SQL editor, run supabase/migrations/0004_booking_layovers.sql.";
+  if (isMissingColumnError(pgError, ["stops", "layovers", "flight_segments"])) {
+    return "Database update required: layover and flight-segment fields are missing. In the Supabase SQL editor, run supabase/migrations/0004_booking_layovers.sql and 0007_booking_flight_segments.sql.";
   }
 
   if (isMissingColumnError(pgError, ["billing_name", "fare_subtotal", "currency"])) {
@@ -67,7 +67,7 @@ export function formatBookingPersistenceError(error: unknown): string {
 
 export function shouldRetryWithoutLayoverColumns(error: unknown): boolean {
   if (!(error && typeof error === "object")) return false;
-  return isMissingColumnError(error as PostgrestLikeError, ["stops", "layovers"]);
+  return isMissingColumnError(error as PostgrestLikeError, ["stops", "layovers", "flight_segments"]);
 }
 
 export function shouldRetryWithoutBillingColumns(error: unknown): boolean {

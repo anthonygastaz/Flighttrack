@@ -1,4 +1,4 @@
-import type { Booking, Layover } from "@/core/domain/booking";
+import type { Booking, BookingFlightSegment, Layover } from "@/core/domain/booking";
 import type { BookingSource, BookingStatus, TravelClass } from "@/core/domain/enums";
 import type { BookingQuery, Paginated } from "@/core/domain/pagination";
 
@@ -17,6 +17,7 @@ export interface CreateBookingInput {
   arrivalCity?: string | null;
   stops?: number;
   layovers?: Layover[];
+  flightSegments?: BookingFlightSegment[];
   departureTerminal?: string | null;
   arrivalTerminal?: string | null;
   departureGate?: string | null;
@@ -45,6 +46,8 @@ export interface CreateBookingInput {
   notes?: string | null;
   /** Admin override on create; omit or null to auto-generate. */
   bookingReference?: string | null;
+  /** When the booking was made (shown as "Booked on" to passengers). */
+  createdAt?: string;
 }
 
 export type UpdateBookingInput = Partial<Omit<CreateBookingInput, "bookingReference">> & {

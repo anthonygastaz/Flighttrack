@@ -7,6 +7,25 @@ export interface Layover {
   durationMinutes: number;
 }
 
+/** One flight leg in a multi-stop itinerary. */
+export interface BookingFlightSegment {
+  airline: string;
+  airlineIata: string | null;
+  flightNumber: string;
+  departureAirport: string;
+  arrivalAirport: string;
+  departureCity: string | null;
+  arrivalCity: string | null;
+  departureTime: string;
+  arrivalTime: string;
+  departureTerminal: string | null;
+  arrivalTerminal: string | null;
+  departureGate: string | null;
+  arrivalGate: string | null;
+  seat: string | null;
+  aircraft: string | null;
+}
+
 /**
  * The Booking aggregate root — the central domain entity. Field names use
  * camelCase; the Supabase repository maps to/from the snake_case columns.
@@ -35,6 +54,8 @@ export interface Booking {
   // Stops & layovers (empty when non-stop)
   stops: number;
   layovers: Layover[];
+  /** Per-leg flight details when stops > 0; empty for non-stop. */
+  flightSegments: BookingFlightSegment[];
 
   // Terminals & gates
   departureTerminal: string | null;

@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { BOOKING_SOURCES, BOOKING_STATUSES, TRAVEL_CLASSES } from "@/core/domain/enums";
+import type { BookingFlightSegment } from "@/core/domain/booking";
 import { isValidBookingReference, normalizeBookingReference } from "@/core/services/booking-reference-utils";
+import { dateInputToIso } from "@/lib/format";
+import { flightSegmentFormSchema } from "@/lib/validation/flight-segment-form";
 
 const iataAirport = z
   .string()
@@ -19,11 +22,6 @@ const optionalText = z
   .string()
   .trim()
   .max(120)
-  .optional()
-  .or(z.literal(""));
-
-const optionalMoney = z
-  .union([z.literal(""), z.coerce.number().min(0, "Amount cannot be negative.").max(9_999_999.99)])
   .optional()
   .or(z.literal(""));
 
@@ -56,6 +54,7 @@ export const bookingFormSchema = z
       .transform((value) => normalizeBookingReference(value))
       .optional()
       .or(z.literal("")),
+    bookedOn: z.string().min(1, "Booking date is required."),
     passengerFirstName: z.string().trim().min(1, "First name is required.").max(80),
     passengerLastName: z.string().trim().min(1, "Last name is required.").max(80),
     email: z
@@ -83,6 +82,7 @@ export const bookingFormSchema = z
 
     stops: z.coerce.number().int().min(0).max(3).default(0),
     layovers: z.array(layoverFormSchema).default([]),
+    flightSegments: z.array(flightSegmentFormSchema).default([]),
 
     departureTerminal: optionalText,
     arrivalTerminal: optionalText,
@@ -107,16 +107,6 @@ export const bookingFormSchema = z
     billingCountry: optionalText,
     paymentMethod: optionalText,
 
-    fareSubtotal: optionalMoney,
-    taxesFees: optionalMoney,
-    totalPrice: optionalMoney,
-    currency: z
-      .string()
-      .trim()
-      .toUpperCase()
-      .regex(/^[A-Z]{3}$/, "Use a 3-letter currency code (e.g. USD).")
-      .default("USD"),
-
     status: z.enum(BOOKING_STATUSES),
     bookingSource: z.enum(BOOKING_SOURCES).default("demo"),
     notes: z.string().trim().max(1000).optional().or(z.literal("")),
@@ -127,6 +117,15 @@ export const bookingFormSchema = z
         code: z.ZodIssueCode.custom,
         path: ["bookingReference"],
         message: "Booking code must be exactly 13 digits.",
+      });
+    }
+
+    const bookedOn = new Date(`${data.bookedOn}T12:00:00`);
+    if (Number.isNaN(bookedOn.getTime())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bookedOn"],
+        message: "Invalid booking date.",
       });
     }
 
@@ -199,6 +198,77 @@ export const bookingFormSchema = z
         });
       }
     });
+
+    if (data.stops === 0 && data.flightSegments.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["flightSegments"],
+        message: "Remove flight legs for a non-stop journey.",
+      });
+    }
+
+    if (data.stops > 0) {
+      const expectedLegs = data.stops + 1;
+      if (data.flightSegments.length !== expectedLegs) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["flightSegments"],
+          message: `Add flight details for all ${expectedLegs} legs.`,
+        });
+      }
+
+      data.flightSegments.forEach((segment, index) => {
+        const departure = new Date(segment.departureTime);
+        const arrival = new Date(segment.arrivalTime);
+
+        if (
+          !Number.isNaN(departure.getTime()) &&
+          !Number.isNaN(arrival.getTime()) &&
+          arrival.getTime() <= departure.getTime()
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["flightSegments", index, "arrivalTime"],
+            message: "Arrival must be after departure for this leg.",
+          });
+        }
+
+        if (index === 0 && segment.departureAirport !== data.departureAirport) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["flightSegments", index, "departureAirport"],
+            message: "First leg must depart from the journey origin.",
+          });
+        }
+
+        const lastIndex = data.flightSegments.length - 1;
+        if (index === lastIndex && segment.arrivalAirport !== data.arrivalAirport) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["flightSegments", index, "arrivalAirport"],
+            message: "Final leg must arrive at the journey destination.",
+          });
+        }
+
+        const layover = data.layovers[index];
+        if (layover && segment.arrivalAirport !== layover.airport) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["flightSegments", index, "arrivalAirport"],
+            message: `Leg ${index + 1} must arrive at layover airport ${layover.airport}.`,
+          });
+        }
+
+        const nextSegment = data.flightSegments[index + 1];
+        if (layover && nextSegment && nextSegment.departureAirport !== layover.airport) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["flightSegments", index + 1, "departureAirport"],
+            message: `Leg ${index + 2} must depart from layover airport ${layover.airport}.`,
+          });
+        }
+      });
+    }
   });
 
 export type BookingFormInput = z.infer<typeof bookingFormSchema>;
@@ -212,24 +282,45 @@ function emptyToNull(value: string | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
-function moneyToNull(value: number | "" | undefined): number | null {
-  if (value === "" || value === undefined || value === null) return null;
-  return value;
+function mapFlightSegment(values: BookingFormValues["flightSegments"][number]): BookingFlightSegment {
+  return {
+    airline: values.airline,
+    airlineIata: emptyToNull(values.airlineIata),
+    flightNumber: values.flightNumber,
+    departureAirport: values.departureAirport,
+    arrivalAirport: values.arrivalAirport,
+    departureCity: emptyToNull(values.departureCity),
+    arrivalCity: emptyToNull(values.arrivalCity),
+    departureTime: values.departureTime,
+    arrivalTime: values.arrivalTime,
+    departureTerminal: emptyToNull(values.departureTerminal),
+    arrivalTerminal: emptyToNull(values.arrivalTerminal),
+    departureGate: emptyToNull(values.departureGate),
+    arrivalGate: emptyToNull(values.arrivalGate),
+    seat: emptyToNull(values.seat),
+    aircraft: emptyToNull(values.aircraft),
+  };
 }
 
 /** Map validated form values to the booking service create/update input. */
 export function bookingFormValuesToInput(values: BookingFormValues) {
   const bookingReference = values.bookingReference ? values.bookingReference : null;
+  const flightSegments =
+    values.stops > 0 ? values.flightSegments.map(mapFlightSegment) : [];
+  const firstLeg = values.stops > 0 ? values.flightSegments[0] : null;
+  const lastLeg =
+    values.stops > 0 ? values.flightSegments[values.flightSegments.length - 1] : null;
 
   return {
     bookingReference,
+    createdAt: dateInputToIso(values.bookedOn),
     passengerFirstName: values.passengerFirstName,
     passengerLastName: values.passengerLastName,
     email: emptyToNull(values.email)?.toLowerCase() ?? null,
     phone: emptyToNull(values.phone),
-    airline: values.airline,
-    airlineIata: emptyToNull(values.airlineIata),
-    flightNumber: values.flightNumber,
+    airline: firstLeg?.airline ?? values.airline,
+    airlineIata: emptyToNull(firstLeg?.airlineIata ?? values.airlineIata),
+    flightNumber: firstLeg?.flightNumber ?? values.flightNumber,
     departureAirport: values.departureAirport,
     arrivalAirport: values.arrivalAirport,
     departureCity: emptyToNull(values.departureCity),
@@ -243,13 +334,14 @@ export function bookingFormValuesToInput(values: BookingFormValues) {
             durationMinutes: layover.durationHours * 60 + layover.durationMinutes,
           }))
         : [],
-    departureTerminal: emptyToNull(values.departureTerminal),
-    arrivalTerminal: emptyToNull(values.arrivalTerminal),
-    departureGate: emptyToNull(values.departureGate),
-    arrivalGate: emptyToNull(values.arrivalGate),
-    departureTime: values.departureTime,
-    arrivalTime: values.arrivalTime,
-    seat: emptyToNull(values.seat),
+    flightSegments,
+    departureTerminal: emptyToNull(firstLeg?.departureTerminal ?? values.departureTerminal),
+    arrivalTerminal: emptyToNull(lastLeg?.arrivalTerminal ?? values.arrivalTerminal),
+    departureGate: emptyToNull(firstLeg?.departureGate ?? values.departureGate),
+    arrivalGate: emptyToNull(lastLeg?.arrivalGate ?? values.arrivalGate),
+    departureTime: firstLeg?.departureTime ?? values.departureTime,
+    arrivalTime: lastLeg?.arrivalTime ?? values.arrivalTime,
+    seat: emptyToNull(firstLeg?.seat ?? values.seat),
     travelClass: values.travelClass,
     baggageAllowance: emptyToNull(values.baggageAllowance),
     billingName: emptyToNull(values.billingName),
@@ -262,10 +354,6 @@ export function bookingFormValuesToInput(values: BookingFormValues) {
     billingPostalCode: emptyToNull(values.billingPostalCode),
     billingCountry: emptyToNull(values.billingCountry),
     paymentMethod: emptyToNull(values.paymentMethod),
-    fareSubtotal: moneyToNull(values.fareSubtotal),
-    taxesFees: moneyToNull(values.taxesFees),
-    totalPrice: moneyToNull(values.totalPrice),
-    currency: values.currency || "USD",
     status: values.status,
     bookingSource: values.bookingSource,
     notes: emptyToNull(values.notes),

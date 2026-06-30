@@ -35,8 +35,6 @@ export function generateDemoBooking(): CreateBookingInput {
   const arrival = new Date(departure.getTime() + randomInt(90, 14 * 60) * 60 * 1000);
   const firstName = pick(FIRST_NAMES);
   const lastName = pick(LAST_NAMES);
-  const fareSubtotal = randomInt(250, 1800);
-  const taxesFees = Math.round(fareSubtotal * 0.12 * 100) / 100;
 
   return {
     passengerFirstName: firstName,
@@ -64,6 +62,7 @@ export function generateDemoBooking(): CreateBookingInput {
     notes: null,
     stops: 0,
     layovers: [],
+    flightSegments: [],
     billingName: `${firstName} ${lastName}`,
     billingEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
     billingPhone: `+1 555 ${randomInt(100, 999)} ${randomInt(1000, 9999)}`,
@@ -74,9 +73,5 @@ export function generateDemoBooking(): CreateBookingInput {
     billingPostalCode: String(randomInt(10000, 99999)),
     billingCountry: pick(["United States", "United Kingdom", "UAE"]),
     paymentMethod: pick(["Visa ending 4242", "Mastercard ending 8210", "American Express ending 1005"]),
-    fareSubtotal,
-    taxesFees,
-    totalPrice: Math.round((fareSubtotal + taxesFees) * 100) / 100,
-    currency: "USD",
   };
 }

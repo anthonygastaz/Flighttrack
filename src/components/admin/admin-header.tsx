@@ -44,7 +44,7 @@ export function AdminHeader() {
         <Button
           asChild
           size="sm"
-          className="h-8 rounded-full bg-brand-sky px-4 text-xs font-medium text-white hover:bg-brand-sky-hover"
+          className="h-8 rounded-full bg-brand-green px-4 text-xs font-medium text-white hover:bg-brand-green-hover"
         >
           <Link href="/">View site</Link>
         </Button>
@@ -76,7 +76,7 @@ export function AdminHeader() {
 
       <header className="hidden h-16 items-center justify-between border-b border-white/10 bg-brand-navy-mid/80 px-8 backdrop-blur-md lg:flex">
         <div className="flex items-center gap-3 text-white/50">
-          <Plane className="size-4 text-brand-sky" />
+          <Plane className="size-4 text-brand-green" />
           <span className="text-sm">{title}</span>
         </div>
         <Button

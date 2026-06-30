@@ -54,7 +54,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
               className={cn(
                 "flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-brand-sky text-white"
+                  ? "bg-brand-green text-white"
                   : "text-white/60 hover:bg-white/10 hover:text-white",
               )}
             >

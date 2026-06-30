@@ -1,11 +1,13 @@
 import type { Booking } from "@/core/domain/booking";
 import type { BookingFormInput } from "@/lib/validation/booking-schema";
-import { toDatetimeLocalValue } from "@/lib/format";
+import { flightSegmentsForStops } from "@/lib/validation/flight-segment-form";
+import { toDateInputValue, toDatetimeLocalValue } from "@/lib/format";
 
 /** Map a domain booking to form default values. */
 export function bookingToFormValues(booking: Booking): BookingFormInput {
   return {
     bookingReference: booking.bookingReference,
+    bookedOn: toDateInputValue(booking.createdAt),
     passengerFirstName: booking.passengerFirstName,
     passengerLastName: booking.passengerLastName,
     email: booking.email ?? "",
@@ -24,6 +26,44 @@ export function bookingToFormValues(booking: Booking): BookingFormInput {
       durationHours: Math.floor(layover.durationMinutes / 60),
       durationMinutes: layover.durationMinutes % 60,
     })),
+    flightSegments:
+      booking.flightSegments.length > 0
+        ? booking.flightSegments.map((segment) => ({
+            airline: segment.airline,
+            airlineIata: segment.airlineIata ?? "",
+            flightNumber: segment.flightNumber,
+            departureAirport: segment.departureAirport,
+            arrivalAirport: segment.arrivalAirport,
+            departureCity: segment.departureCity ?? "",
+            arrivalCity: segment.arrivalCity ?? "",
+            departureTime: toDatetimeLocalValue(segment.departureTime),
+            arrivalTime: toDatetimeLocalValue(segment.arrivalTime),
+            departureTerminal: segment.departureTerminal ?? "",
+            arrivalTerminal: segment.arrivalTerminal ?? "",
+            departureGate: segment.departureGate ?? "",
+            arrivalGate: segment.arrivalGate ?? "",
+            seat: segment.seat ?? "",
+            aircraft: segment.aircraft ?? "",
+          }))
+        : booking.stops > 0
+          ? flightSegmentsForStops(booking.stops, [], {
+              airline: booking.airline,
+              airlineIata: booking.airlineIata ?? "",
+              flightNumber: booking.flightNumber,
+              departureAirport: booking.departureAirport,
+              arrivalAirport: booking.arrivalAirport,
+              departureCity: booking.departureCity ?? "",
+              arrivalCity: booking.arrivalCity ?? "",
+              departureTime: toDatetimeLocalValue(booking.departureTime),
+              arrivalTime: toDatetimeLocalValue(booking.arrivalTime),
+              departureTerminal: booking.departureTerminal ?? "",
+              arrivalTerminal: booking.arrivalTerminal ?? "",
+              departureGate: booking.departureGate ?? "",
+              arrivalGate: booking.arrivalGate ?? "",
+              seat: booking.seat ?? "",
+              layoverAirports: booking.layovers.map((layover) => layover.airport),
+            })
+          : [],
     departureTerminal: booking.departureTerminal ?? "",
     arrivalTerminal: booking.arrivalTerminal ?? "",
     departureGate: booking.departureGate ?? "",
@@ -46,10 +86,6 @@ export function bookingToFormValues(booking: Booking): BookingFormInput {
     billingPostalCode: booking.billingPostalCode ?? "",
     billingCountry: booking.billingCountry ?? "",
     paymentMethod: booking.paymentMethod ?? "",
-    fareSubtotal: booking.fareSubtotal ?? "",
-    taxesFees: booking.taxesFees ?? "",
-    totalPrice: booking.totalPrice ?? "",
-    currency: booking.currency ?? "USD",
   };
 }
 
@@ -62,6 +98,7 @@ export function defaultBookingFormValues(): BookingFormInput {
 
   return {
     bookingReference: "",
+    bookedOn: toDateInputValue(new Date().toISOString()),
     passengerFirstName: "",
     passengerLastName: "",
     email: "",
@@ -75,6 +112,7 @@ export function defaultBookingFormValues(): BookingFormInput {
     arrivalCity: "",
     stops: 0,
     layovers: [],
+    flightSegments: [],
     departureTerminal: "",
     arrivalTerminal: "",
     departureGate: "",
@@ -97,9 +135,5 @@ export function defaultBookingFormValues(): BookingFormInput {
     billingPostalCode: "",
     billingCountry: "",
     paymentMethod: "",
-    fareSubtotal: "",
-    taxesFees: "",
-    totalPrice: "",
-    currency: "USD",
   };
 }

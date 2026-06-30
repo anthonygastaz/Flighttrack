@@ -1,4 +1,4 @@
-import type { Booking, Layover } from "@/core/domain/booking";
+import type { Booking, BookingFlightSegment, Layover } from "@/core/domain/booking";
 import type {
   CreateBookingInput,
   UpdateBookingInput,
@@ -36,6 +36,119 @@ function layoversToJson(layovers: Layover[]): Layover[] {
   }));
 }
 
+function parseFlightSegments(value: unknown): BookingFlightSegment[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const airline = typeof row.airline === "string" ? row.airline : null;
+      const flightNumber = typeof row.flightNumber === "string"
+        ? row.flightNumber
+        : typeof row.flight_number === "string"
+          ? row.flight_number
+          : null;
+      const departureAirport = typeof row.departureAirport === "string"
+        ? row.departureAirport
+        : typeof row.departure_airport === "string"
+          ? row.departure_airport
+          : null;
+      const arrivalAirport = typeof row.arrivalAirport === "string"
+        ? row.arrivalAirport
+        : typeof row.arrival_airport === "string"
+          ? row.arrival_airport
+          : null;
+      const departureTime = typeof row.departureTime === "string"
+        ? row.departureTime
+        : typeof row.departure_time === "string"
+          ? row.departure_time
+          : null;
+      const arrivalTime = typeof row.arrivalTime === "string"
+        ? row.arrivalTime
+        : typeof row.arrival_time === "string"
+          ? row.arrival_time
+          : null;
+
+      if (!airline || !flightNumber || !departureAirport || !arrivalAirport || !departureTime || !arrivalTime) {
+        return null;
+      }
+
+      return {
+        airline,
+        airlineIata:
+          typeof row.airlineIata === "string"
+            ? row.airlineIata
+            : typeof row.airline_iata === "string"
+              ? row.airline_iata
+              : null,
+        flightNumber,
+        departureAirport,
+        arrivalAirport,
+        departureCity:
+          typeof row.departureCity === "string"
+            ? row.departureCity
+            : typeof row.departure_city === "string"
+              ? row.departure_city
+              : null,
+        arrivalCity:
+          typeof row.arrivalCity === "string"
+            ? row.arrivalCity
+            : typeof row.arrival_city === "string"
+              ? row.arrival_city
+              : null,
+        departureTime,
+        arrivalTime,
+        departureTerminal:
+          typeof row.departureTerminal === "string"
+            ? row.departureTerminal
+            : typeof row.departure_terminal === "string"
+              ? row.departure_terminal
+              : null,
+        arrivalTerminal:
+          typeof row.arrivalTerminal === "string"
+            ? row.arrivalTerminal
+            : typeof row.arrival_terminal === "string"
+              ? row.arrival_terminal
+              : null,
+        departureGate:
+          typeof row.departureGate === "string"
+            ? row.departureGate
+            : typeof row.departure_gate === "string"
+              ? row.departure_gate
+              : null,
+        arrivalGate:
+          typeof row.arrivalGate === "string"
+            ? row.arrivalGate
+            : typeof row.arrival_gate === "string"
+              ? row.arrival_gate
+              : null,
+        seat: typeof row.seat === "string" ? row.seat : null,
+        aircraft: typeof row.aircraft === "string" ? row.aircraft : null,
+      } satisfies BookingFlightSegment;
+    })
+    .filter((item): item is BookingFlightSegment => item !== null);
+}
+
+function flightSegmentsToJson(segments: BookingFlightSegment[]): BookingFlightSegment[] {
+  return segments.map((segment) => ({
+    airline: segment.airline,
+    airlineIata: segment.airlineIata,
+    flightNumber: segment.flightNumber,
+    departureAirport: segment.departureAirport,
+    arrivalAirport: segment.arrivalAirport,
+    departureCity: segment.departureCity,
+    arrivalCity: segment.arrivalCity,
+    departureTime: segment.departureTime,
+    arrivalTime: segment.arrivalTime,
+    departureTerminal: segment.departureTerminal,
+    arrivalTerminal: segment.arrivalTerminal,
+    departureGate: segment.departureGate,
+    arrivalGate: segment.arrivalGate,
+    seat: segment.seat,
+    aircraft: segment.aircraft,
+  }));
+}
+
 function parseNumeric(value: number | string | null | undefined): number | null {
   if (value === null || value === undefined || value === "") return null;
   const parsed = typeof value === "number" ? value : Number(value);
@@ -60,6 +173,7 @@ export function rowToBooking(row: BookingRow): Booking {
     arrivalCity: row.arrival_city,
     stops: row.stops ?? 0,
     layovers: parseLayovers(row.layovers),
+    flightSegments: parseFlightSegments(row.flight_segments),
     departureTerminal: row.departure_terminal,
     arrivalTerminal: row.arrival_terminal,
     departureGate: row.departure_gate,
@@ -108,6 +222,7 @@ export function createInputToRow(input: CreateBookingInput, reference: string): 
     arrival_city: input.arrivalCity ?? null,
     stops: input.stops ?? 0,
     layovers: layoversToJson(input.layovers ?? []),
+    flight_segments: flightSegmentsToJson(input.flightSegments ?? []),
     departure_terminal: input.departureTerminal ?? null,
     arrival_terminal: input.arrivalTerminal ?? null,
     departure_gate: input.departureGate ?? null,
@@ -134,6 +249,7 @@ export function createInputToRow(input: CreateBookingInput, reference: string): 
     status: input.status,
     booking_source: input.bookingSource ?? "demo",
     notes: input.notes ?? null,
+    ...(input.createdAt ? { created_at: input.createdAt } : {}),
   };
 }
 
@@ -157,6 +273,10 @@ export function updateInputToRow(input: UpdateBookingInput): BookingUpdate {
   set("arrival_city", input.arrivalCity);
   set("stops", input.stops);
   set("layovers", input.layovers ? layoversToJson(input.layovers) : undefined);
+  set(
+    "flight_segments",
+    input.flightSegments ? flightSegmentsToJson(input.flightSegments) : undefined,
+  );
   set("departure_terminal", input.departureTerminal);
   set("arrival_terminal", input.arrivalTerminal);
   set("departure_gate", input.departureGate);
@@ -184,6 +304,7 @@ export function updateInputToRow(input: UpdateBookingInput): BookingUpdate {
   set("booking_source", input.bookingSource);
   set("notes", input.notes);
   set("booking_reference", input.bookingReference);
+  set("created_at", input.createdAt);
 
   return row;
 }

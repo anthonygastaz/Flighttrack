@@ -13,7 +13,6 @@ import {
   MapPin,
   Phone,
   Plane,
-  Receipt,
   Ticket,
   User,
   Wifi,
@@ -95,7 +94,7 @@ function ItineraryTimeline({ items }: { items: TripItineraryItem[] }) {
             {!isLast ? (
               <span className="absolute bottom-0 left-[11px] top-0 w-px bg-slate-200" aria-hidden />
             ) : null}
-            <span className="absolute left-0 top-5 size-[22px] rounded-full border-2 border-[#0055FF] bg-[#0055FF]/10" />
+            <span className="absolute left-0 top-5 size-[22px] rounded-full border-2 border-brand-green bg-brand-green/10" />
 
             <div className="space-y-4 pb-6">
               <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr]">
@@ -116,7 +115,7 @@ function ItineraryTimeline({ items }: { items: TripItineraryItem[] }) {
                   </p>
                   <div className="my-2 flex w-20 items-center gap-1">
                     <span className="h-px flex-1 bg-slate-200" />
-                    <Plane className="size-4 rotate-90 text-[#0055FF]" />
+                    <Plane className="size-4 rotate-90 text-brand-green" />
                     <span className="h-px flex-1 bg-slate-200" />
                   </div>
                   <p className="text-xs text-slate-500">Travel time</p>
@@ -161,7 +160,7 @@ function ItineraryTimeline({ items }: { items: TripItineraryItem[] }) {
                       key={amenity}
                       className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs text-slate-600 ring-1 ring-slate-200"
                     >
-                      <Wifi className="size-3 text-[#0055FF]" />
+                      <Wifi className="size-3 text-brand-green" />
                       {amenity}
                     </span>
                   ))}
@@ -211,7 +210,7 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
             className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
           >
             <div>
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#0055FF]">
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-brand-green">
                 Review your trip
               </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -225,12 +224,6 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
                 </span>
                 <span aria-hidden>·</span>
                 <span>Booked on {trip.bookedOnLabel}</span>
-                {trip.pricing?.totalPriceLabel ? (
-                  <>
-                    <span aria-hidden>·</span>
-                    <span className="font-medium text-white">{trip.pricing.totalPriceLabel}</span>
-                  </>
-                ) : null}
               </div>
             </div>
 
@@ -265,7 +258,7 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
                 <p className="text-sm font-medium text-slate-700">{trip.totalDurationLabel}</p>
                 <div className="my-3 flex w-full max-w-[12rem] items-center gap-2">
                   <span className="h-px flex-1 bg-slate-200" />
-                  <Plane className="size-5 rotate-90 text-[#0055FF]" />
+                  <Plane className="size-5 rotate-90 text-brand-green" />
                   <span className="h-px flex-1 bg-slate-200" />
                 </div>
                 <p className="text-sm font-medium text-slate-900">{trip.stopsLabel}</p>
@@ -303,7 +296,7 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
                   >
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 flex size-9 items-center justify-center rounded-lg bg-white ring-1 ring-slate-200">
-                        <Luggage className="size-4 text-[#0055FF]" />
+                        <Luggage className="size-4 text-brand-green" />
                       </div>
                       <div>
                         <p className="font-medium text-slate-900">{item.name}</p>
@@ -324,8 +317,8 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
             <SectionCard title="Who&apos;s traveling?">
               <div className="space-y-4">
                 <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-4">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-[#0055FF]/10">
-                    <User className="size-5 text-[#0055FF]" />
+                  <div className="flex size-10 items-center justify-center rounded-full bg-brand-green/10">
+                    <User className="size-5 text-brand-green" />
                   </div>
                   <div>
                     <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
@@ -370,44 +363,13 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            {trip.pricing ? (
-              <SectionCard title={`Price details (${trip.pricing.currency})`}>
-                <div className="space-y-3">
-                  {trip.pricing.lines.map((line) => (
-                    <div
-                      key={line.label}
-                      className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-9 items-center justify-center rounded-lg bg-white ring-1 ring-slate-200">
-                          <Receipt className="size-4 text-[#0055FF]" />
-                        </div>
-                        <p className="font-medium text-slate-900">{line.label}</p>
-                      </div>
-                      <p className="font-semibold text-slate-900">{line.amountLabel}</p>
-                    </div>
-                  ))}
-                  {trip.pricing.totalPriceLabel ? (
-                    <div className="flex items-center justify-between gap-4 rounded-xl border border-[#0055FF]/20 bg-[#0055FF]/5 px-4 py-4">
-                      <p className="text-base font-semibold text-slate-900">Total price</p>
-                      <p className="text-xl font-bold text-[#0055FF]">{trip.pricing.totalPriceLabel}</p>
-                    </div>
-                  ) : null}
-                </div>
-                <p className="mt-4 text-xs text-slate-400">
-                  All fares are quoted in {trip.pricing.currency}. Some airlines may charge additional
-                  baggage fees.
-                </p>
-              </SectionCard>
-            ) : null}
-
             {trip.billing ? (
               <SectionCard title="Billing information">
                 <div className="space-y-4">
                   {trip.billing.name ? (
                     <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-4">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-[#0055FF]/10">
-                        <User className="size-5 text-[#0055FF]" />
+                      <div className="flex size-10 items-center justify-center rounded-full bg-brand-green/10">
+                        <User className="size-5 text-brand-green" />
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
@@ -438,7 +400,7 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
                   ) : null}
                   {trip.billing.paymentMethod ? (
                     <div className="flex items-center gap-2 rounded-xl border border-slate-100 px-4 py-3 text-sm text-slate-700">
-                      <CreditCard className="size-4 text-[#0055FF]" />
+                      <CreditCard className="size-4 text-brand-green" />
                       {trip.billing.paymentMethod}
                     </div>
                   ) : null}
@@ -508,7 +470,7 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
             <Button
               type="button"
               disabled={downloadingPdf}
-              className="h-11 rounded-full bg-[#0055FF] text-white hover:bg-[#0046E0]"
+              className="h-11 rounded-full bg-brand-green text-white hover:bg-brand-green-hover"
               onClick={handleDownloadPdf}
             >
               <Download className="mr-2 size-4" />

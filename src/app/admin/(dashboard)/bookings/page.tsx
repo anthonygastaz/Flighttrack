@@ -42,7 +42,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
       >
         <Button
           asChild
-          className="rounded-full bg-brand-sky px-6 text-white hover:bg-brand-sky-hover"
+          className="rounded-full bg-brand-green px-6 text-white hover:bg-brand-green-hover"
         >
           <Link href="/admin/bookings/new">Create booking</Link>
         </Button>

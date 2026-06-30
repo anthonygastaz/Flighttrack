@@ -10,7 +10,7 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
+    --primary: 149 100% 33%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --ring: 149 100% 33%;
     --radius: 0.625rem;
   }
 
@@ -33,7 +33,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
+    --primary: 149 85% 42%;
     --primary-foreground: 222 47% 6%;
     --secondary: 217 33% 14%;
     --secondary-foreground: 210 40% 98%;
@@ -45,7 +45,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 16%;
     --input: 217 33% 16%;
-    --ring: 217 91% 60%;
+    --ring: 149 85% 42%;
   }
 }
 
@@ -68,7 +68,7 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-brand-green-light bg-clip-text text-transparent;
   }
 
   .hero-glow {
@@ -105,16 +105,16 @@
     @apply relative overflow-hidden border-0 text-white shadow-none transition-all duration-200;
     background: linear-gradient(
       105deg,
-      #5eb0ff 0%,
-      #0055ff 42%,
-      #0041cc 100%
+      #6ee0a8 0%,
+      #00a651 42%,
+      #007a3d 100%
     ) !important;
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
       inset 0 -1px 0 0 rgba(0, 0, 0, 0.12),
       0 0 0 1px rgba(255, 255, 255, 0.08),
-      0 4px 24px -4px rgba(0, 85, 255, 0.65),
-      0 0 40px -6px rgba(0, 85, 255, 0.5);
+      0 4px 24px -4px rgba(0, 166, 81, 0.65),
+      0 0 40px -6px rgba(0, 166, 81, 0.5);
   }
 
   .btn-track-glow::before {
@@ -131,17 +131,17 @@
   .btn-track-glow:hover {
     background: linear-gradient(
       105deg,
-      #6eb8ff 0%,
-      #0055ff 42%,
-      #003db8 100%
+      #7ae8b4 0%,
+      #00a651 42%,
+      #006835 100%
     ) !important;
     filter: brightness(1.04);
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
       inset 0 -1px 0 0 rgba(0, 0, 0, 0.12),
       0 0 0 1px rgba(255, 255, 255, 0.12),
-      0 8px 32px -4px rgba(0, 85, 255, 0.75),
-      0 0 56px -4px rgba(0, 85, 255, 0.55);
+      0 8px 32px -4px rgba(0, 166, 81, 0.75),
+      0 0 56px -4px rgba(0, 166, 81, 0.55);
   }
 
   .btn-track-glow:active {
