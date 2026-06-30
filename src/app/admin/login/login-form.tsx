@@ -18,7 +18,7 @@ export function LoginForm({ disabled = false }: { disabled?: boolean }) {
           id="email"
           name="email"
           type="email"
-          placeholder="admin@flighttrack.app"
+          placeholder="Admin Email"
           required
           disabled={disabled}
         />
