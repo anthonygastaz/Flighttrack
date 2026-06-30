@@ -1,4 +1,4 @@
-import { addMinutes, differenceInMinutes, format, parseISO } from "date-fns";
+import { addMinutes, differenceInMinutes } from "date-fns";
 
 import type { Booking } from "@/core/domain/booking";
 import {
@@ -10,6 +10,13 @@ import type { TravelClass } from "@/core/domain/enums";
 import { BOOKING_STATUS_LABELS, TRAVEL_CLASS_LABELS } from "@/core/domain/enums";
 import type { FlightStatusResult } from "@/core/domain/flight";
 import { findAirportByIata } from "@/lib/airports/search";
+import {
+  formatWallClock,
+  normalizeWallClockForStorage,
+  wallClockDifferenceMinutes,
+  wallClockFromDisplayDate,
+  wallClockToDisplayDate,
+} from "@/lib/datetime/wall-clock";
 
 export interface TripBillingDetails {
   name: string | null;
@@ -112,28 +119,16 @@ function airportLabel(iata: string, fallbackCity: string | null): {
   };
 }
 
-function formatTripClock(iso: string): string {
-  try {
-    return format(parseISO(iso), "h:mm a");
-  } catch {
-    return iso;
-  }
+function formatTripClock(stored: string): string {
+  return formatWallClock(stored, "h:mm a");
 }
 
-function formatTripDate(iso: string): string {
-  try {
-    return format(parseISO(iso), "EEE, MMM d, yyyy");
-  } catch {
-    return iso;
-  }
+function formatTripDate(stored: string): string {
+  return formatWallClock(stored, "EEE, MMM d, yyyy");
 }
 
-function formatTripDateShort(iso: string): string {
-  try {
-    return format(parseISO(iso), "MMM d");
-  } catch {
-    return iso;
-  }
+function formatTripDateShort(stored: string): string {
+  return formatWallClock(stored, "MMM d");
 }
 
 function durationLabel(minutes: number): string {
@@ -188,8 +183,10 @@ function buildItinerary(booking: Booking): TripItineraryItem[] {
     booking.flightSegments.forEach((segment, index) => {
       const fromMeta = airportLabel(segment.departureAirport, segment.departureCity);
       const toMeta = airportLabel(segment.arrivalAirport, segment.arrivalCity);
-      const departure = parseISO(segment.departureTime);
-      const arrival = parseISO(segment.arrivalTime);
+      const legMinutes = wallClockDifferenceMinutes(
+        segment.departureTime,
+        segment.arrivalTime,
+      );
 
       items.push({
         kind: "flight",
@@ -202,9 +199,9 @@ function buildItinerary(booking: Booking): TripItineraryItem[] {
         toAirport: segment.arrivalAirport,
         toCity: toMeta.city,
         toAirportName: toMeta.name,
-        departureTime: segment.departureTime,
-        arrivalTime: segment.arrivalTime,
-        durationLabel: durationLabel(differenceInMinutes(arrival, departure)),
+        departureTime: normalizeWallClockForStorage(segment.departureTime),
+        arrivalTime: normalizeWallClockForStorage(segment.arrivalTime),
+        durationLabel: durationLabel(legMinutes),
         travelClass: TRAVEL_CLASS_LABELS[booking.travelClass],
         aircraft: segment.aircraft ?? aircraftForRoute(segment.departureAirport, segment.arrivalAirport, index),
         amenities: amenitiesForClass(booking.travelClass),
@@ -227,9 +224,10 @@ function buildItinerary(booking: Booking): TripItineraryItem[] {
     return items;
   }
 
-  const departure = parseISO(booking.departureTime);
-  const arrival = parseISO(booking.arrivalTime);
-  const totalMinutes = Math.max(differenceInMinutes(arrival, departure), 0);
+  const totalMinutes = Math.max(
+    wallClockDifferenceMinutes(booking.departureTime, booking.arrivalTime),
+    0,
+  );
   const layoverMinutes = booking.layovers.reduce((sum, layover) => sum + layover.durationMinutes, 0);
   const flightMinutes = Math.max(totalMinutes - layoverMinutes, 0);
   const segmentCount = booking.layovers.length + 1;
@@ -247,7 +245,8 @@ function buildItinerary(booking: Booking): TripItineraryItem[] {
   ];
 
   const items: TripItineraryItem[] = [];
-  let cursor = departure;
+  let cursor = wallClockToDisplayDate(booking.departureTime);
+  const arrival = wallClockToDisplayDate(booking.arrivalTime);
 
   for (let index = 0; index < segmentCount; index += 1) {
     const from = airports[index]!;
@@ -256,6 +255,8 @@ function buildItinerary(booking: Booking): TripItineraryItem[] {
     const toMeta = airportLabel(to, cities[index + 1] ?? null);
     const isLast = index === segmentCount - 1;
     const segmentEnd = isLast ? arrival : addMinutes(cursor, minutesPerSegment);
+    const segmentStartStored = wallClockFromDisplayDate(cursor);
+    const segmentEndStored = wallClockFromDisplayDate(segmentEnd);
 
     items.push({
       kind: "flight",
@@ -268,9 +269,11 @@ function buildItinerary(booking: Booking): TripItineraryItem[] {
       toAirport: to,
       toCity: toMeta.city,
       toAirportName: toMeta.name,
-      departureTime: cursor.toISOString(),
-      arrivalTime: segmentEnd.toISOString(),
-      durationLabel: durationLabel(differenceInMinutes(segmentEnd, cursor)),
+      departureTime: segmentStartStored,
+      arrivalTime: segmentEndStored,
+      durationLabel: durationLabel(
+        differenceInMinutes(segmentEnd, cursor),
+      ),
       travelClass: TRAVEL_CLASS_LABELS[booking.travelClass],
       aircraft: aircraftForRoute(from, to, index),
       amenities: amenitiesForClass(booking.travelClass),
@@ -343,9 +346,9 @@ export function tripDetailsFromBooking(
 ): TripDetailsData {
   const fromMeta = airportLabel(booking.departureAirport, booking.departureCity);
   const toMeta = airportLabel(booking.arrivalAirport, booking.arrivalCity);
-  const totalMinutes = differenceInMinutes(
-    parseISO(booking.arrivalTime),
-    parseISO(booking.departureTime),
+  const totalMinutes = wallClockDifferenceMinutes(
+    booking.departureTime,
+    booking.arrivalTime,
   );
 
   return {

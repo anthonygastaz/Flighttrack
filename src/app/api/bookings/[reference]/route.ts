@@ -9,17 +9,11 @@ import { requireAdmin } from "@/lib/auth/admin";
 import { normalizeBookingReference } from "@/core/services/booking-reference";
 import { bookingFormSchema, bookingFormValuesToInput } from "@/lib/validation/booking-schema";
 
-function toIso(value: string): string {
-  return new Date(value).toISOString();
-}
-
 function toUpdateInput(values: ReturnType<typeof bookingFormSchema.parse>) {
   const mapped = bookingFormValuesToInput(values);
   const { bookingReference, ...rest } = mapped;
   return {
     ...rest,
-    departureTime: toIso(mapped.departureTime),
-    arrivalTime: toIso(mapped.arrivalTime),
     ...(bookingReference ? { bookingReference } : {}),
   };
 }

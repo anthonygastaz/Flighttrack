@@ -1,7 +1,14 @@
-import { format, formatDistanceToNow, parseISO } from "date-fns";
+import { formatDistanceToNow, format, parseISO } from "date-fns";
 
-/** Format an ISO timestamp for display (e.g. "Mon, Jun 29 · 14:30"). */
-export function formatDateTime(iso: string): string {
+import {
+  formatWallClock,
+  normalizeWallClockForStorage,
+  wallClockToDatetimeLocalValue,
+  wallClockToDisplayDate,
+} from "@/lib/datetime/wall-clock";
+
+/** Format a real UTC instant (e.g. live flight API data). */
+export function formatInstantDateTime(iso: string): string {
   try {
     return format(parseISO(iso), "EEE, MMM d · HH:mm");
   } catch {
@@ -9,49 +16,49 @@ export function formatDateTime(iso: string): string {
   }
 }
 
+/** Format a stored booking time for display (e.g. "Mon, Jun 29 · 14:30"). */
+export function formatDateTime(iso: string): string {
+  return formatWallClock(iso, "EEE, MMM d · HH:mm");
+}
+
 /** Short time only (e.g. "14:30"). */
 export function formatTime(iso: string): string {
-  try {
-    return format(parseISO(iso), "HH:mm");
-  } catch {
-    return iso;
-  }
+  return formatWallClock(iso, "HH:mm");
 }
 
-/** Relative time (e.g. "in 3 days"). */
+/** 12-hour clock (e.g. "2:30 PM"). */
+export function formatTime12(iso: string): string {
+  return formatWallClock(iso, "h:mm a");
+}
+
+/** Relative time from a wall-clock instant (approximate; uses viewer locale). */
 export function formatRelative(iso: string): string {
   try {
-    return formatDistanceToNow(parseISO(iso), { addSuffix: true });
+    return formatDistanceToNow(wallClockToDisplayDate(iso), { addSuffix: true });
   } catch {
     return "";
   }
 }
 
-/** Convert ISO to date input value (YYYY-MM-DD). */
+/** Convert ISO to date input value (YYYY-MM-DD) using wall-clock components. */
 export function toDateInputValue(iso: string): string {
   try {
-    const date = parseISO(iso);
+    const date = parseISO(normalizeWallClockForStorage(iso));
     const pad = (n: number) => String(n).padStart(2, "0");
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
   } catch {
     return "";
   }
 }
 
-/** Convert date input (YYYY-MM-DD) to ISO, using local noon to avoid timezone shifts. */
+/** Convert date input (YYYY-MM-DD) to ISO, using UTC noon for the calendar day. */
 export function dateInputToIso(dateValue: string): string {
-  return new Date(`${dateValue}T12:00:00`).toISOString();
+  return normalizeWallClockForStorage(`${dateValue}T12:00`);
 }
 
-/** Convert ISO to datetime-local input value. */
+/** Convert stored booking time to datetime-local input value. */
 export function toDatetimeLocalValue(iso: string): string {
-  try {
-    const date = parseISO(iso);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  } catch {
-    return "";
-  }
+  return wallClockToDatetimeLocalValue(iso);
 }
 
 /** Format a currency amount for display. */

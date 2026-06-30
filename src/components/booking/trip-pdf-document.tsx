@@ -1,12 +1,12 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
 import { forwardRef } from "react";
 
 import type { Booking } from "@/core/domain/booking";
 import { BOOKING_STATUS_LABELS } from "@/core/domain/enums";
 import { APP_NAME } from "@/lib/brand";
-import { formatDateTime } from "@/lib/format";
+import { formatWallClock } from "@/lib/datetime/wall-clock";
+import { formatInstantDateTime } from "@/lib/format";
 import { PDF_CAPTURE_WIDTH_PX } from "@/lib/tickets/download-pdf";
 import type { TripDetailsData, TripItineraryItem } from "@/lib/tickets/trip-details";
 
@@ -65,7 +65,7 @@ function ItineraryPdfItems({ items }: { items: TripItineraryItem[] }) {
             <div className="mt-3 grid grid-cols-[1fr_auto_1fr] gap-3">
               <div>
                 <p className="text-[15px] font-bold text-slate-900">
-                  {format(parseISO(item.departureTime), "h:mm a")}
+                  {formatWallClock(item.departureTime, "h:mm a")}
                 </p>
                 <p className="text-slate-600">{item.fromCity}</p>
                 <p className="font-medium text-slate-800">{item.fromAirport}</p>
@@ -75,7 +75,7 @@ function ItineraryPdfItems({ items }: { items: TripItineraryItem[] }) {
               </div>
               <div className="text-right">
                 <p className="text-[15px] font-bold text-slate-900">
-                  {format(parseISO(item.arrivalTime), "h:mm a")}
+                  {formatWallClock(item.arrivalTime, "h:mm a")}
                 </p>
                 <p className="text-slate-600">{item.toCity}</p>
                 <p className="font-medium text-slate-800">{item.toAirport}</p>
@@ -192,13 +192,13 @@ export const TripPdfDocument = forwardRef<HTMLDivElement, TripPdfDocumentProps>(
               {trip.liveFlight.estimatedDeparture ? (
                 <PdfRow
                   label="Estimated departure"
-                  value={formatDateTime(trip.liveFlight.estimatedDeparture)}
+                  value={formatInstantDateTime(trip.liveFlight.estimatedDeparture)}
                 />
               ) : null}
               {trip.liveFlight.estimatedArrival ? (
                 <PdfRow
                   label="Estimated arrival"
-                  value={formatDateTime(trip.liveFlight.estimatedArrival)}
+                  value={formatInstantDateTime(trip.liveFlight.estimatedArrival)}
                 />
               ) : null}
             </PdfSection>

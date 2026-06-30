@@ -2,6 +2,7 @@ import type { Booking } from "@/core/domain/booking";
 import type { BookingFormInput } from "@/lib/validation/booking-schema";
 import { flightSegmentsForStops } from "@/lib/validation/flight-segment-form";
 import { toDateInputValue, toDatetimeLocalValue } from "@/lib/format";
+import { wallClockFromLocalDate } from "@/lib/datetime/wall-clock";
 
 /** Map a domain booking to form default values. */
 export function bookingToFormValues(booking: Booking): BookingFormInput {
@@ -117,8 +118,8 @@ export function defaultBookingFormValues(): BookingFormInput {
     arrivalTerminal: "",
     departureGate: "",
     arrivalGate: "",
-    departureTime: toDatetimeLocalValue(departure.toISOString()),
-    arrivalTime: toDatetimeLocalValue(arrival.toISOString()),
+    departureTime: toDatetimeLocalValue(wallClockFromLocalDate(departure)),
+    arrivalTime: toDatetimeLocalValue(wallClockFromLocalDate(arrival)),
     seat: "",
     travelClass: "economy",
     baggageAllowance: "1 x 23kg",

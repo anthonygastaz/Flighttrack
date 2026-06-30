@@ -1,4 +1,5 @@
 import type { CreateBookingInput } from "@/core/repositories/booking-repository";
+import { wallClockFromLocalDate } from "@/lib/datetime/wall-clock";
 import { findAirlineByIata } from "@/lib/airlines/search";
 import { findAirportByIata } from "@/lib/airports/search";
 import type { PublicBookingValues } from "@/lib/validation/public-booking-schema";
@@ -50,8 +51,8 @@ export function buildPublicBooking(input: PublicBookingValues): CreateBookingInp
     arrivalTerminal: String(randomInt(1, 5)),
     departureGate: pickGate(),
     arrivalGate: pickGate(),
-    departureTime: departure.toISOString(),
-    arrivalTime: arrival.toISOString(),
+    departureTime: wallClockFromLocalDate(departure),
+    arrivalTime: wallClockFromLocalDate(arrival),
     seat: input.seats.join(", "),
     travelClass: input.travelClass,
     baggageAllowance: input.travelClass === "economy" ? "1 x 23kg" : "2 x 32kg",

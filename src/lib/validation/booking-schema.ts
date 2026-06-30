@@ -4,6 +4,11 @@ import { BOOKING_SOURCES, BOOKING_STATUSES, TRAVEL_CLASSES } from "@/core/domain
 import type { BookingFlightSegment } from "@/core/domain/booking";
 import { isValidBookingReference, normalizeBookingReference } from "@/core/services/booking-reference-utils";
 import { dateInputToIso } from "@/lib/format";
+import {
+  compareWallClock,
+  isValidWallClock,
+  normalizeWallClockForStorage,
+} from "@/lib/datetime/wall-clock";
 import { flightSegmentFormSchema } from "@/lib/validation/flight-segment-form";
 
 const iataAirport = z
@@ -129,17 +134,14 @@ export const bookingFormSchema = z
       });
     }
 
-    const departure = new Date(data.departureTime);
-    const arrival = new Date(data.arrivalTime);
-
-    if (Number.isNaN(departure.getTime())) {
+    if (!isValidWallClock(data.departureTime)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["departureTime"],
         message: "Invalid departure date/time.",
       });
     }
-    if (Number.isNaN(arrival.getTime())) {
+    if (!isValidWallClock(data.arrivalTime)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["arrivalTime"],
@@ -147,9 +149,9 @@ export const bookingFormSchema = z
       });
     }
     if (
-      !Number.isNaN(departure.getTime()) &&
-      !Number.isNaN(arrival.getTime()) &&
-      arrival.getTime() <= departure.getTime()
+      isValidWallClock(data.departureTime) &&
+      isValidWallClock(data.arrivalTime) &&
+      compareWallClock(data.arrivalTime, data.departureTime) <= 0
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -218,13 +220,10 @@ export const bookingFormSchema = z
       }
 
       data.flightSegments.forEach((segment, index) => {
-        const departure = new Date(segment.departureTime);
-        const arrival = new Date(segment.arrivalTime);
-
         if (
-          !Number.isNaN(departure.getTime()) &&
-          !Number.isNaN(arrival.getTime()) &&
-          arrival.getTime() <= departure.getTime()
+          isValidWallClock(segment.departureTime) &&
+          isValidWallClock(segment.arrivalTime) &&
+          compareWallClock(segment.arrivalTime, segment.departureTime) <= 0
         ) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -291,8 +290,8 @@ function mapFlightSegment(values: BookingFormValues["flightSegments"][number]): 
     arrivalAirport: values.arrivalAirport,
     departureCity: emptyToNull(values.departureCity),
     arrivalCity: emptyToNull(values.arrivalCity),
-    departureTime: values.departureTime,
-    arrivalTime: values.arrivalTime,
+    departureTime: normalizeWallClockForStorage(values.departureTime),
+    arrivalTime: normalizeWallClockForStorage(values.arrivalTime),
     departureTerminal: emptyToNull(values.departureTerminal),
     arrivalTerminal: emptyToNull(values.arrivalTerminal),
     departureGate: emptyToNull(values.departureGate),
@@ -306,7 +305,9 @@ function mapFlightSegment(values: BookingFormValues["flightSegments"][number]): 
 export function bookingFormValuesToInput(values: BookingFormValues) {
   const bookingReference = values.bookingReference ? values.bookingReference : null;
   const flightSegments =
-    values.stops > 0 ? values.flightSegments.map(mapFlightSegment) : [];
+    values.stops > 0
+      ? values.flightSegments.map((segment) => mapFlightSegment(segment))
+      : [];
   const firstLeg = values.stops > 0 ? values.flightSegments[0] : null;
   const lastLeg =
     values.stops > 0 ? values.flightSegments[values.flightSegments.length - 1] : null;
@@ -339,8 +340,8 @@ export function bookingFormValuesToInput(values: BookingFormValues) {
     arrivalTerminal: emptyToNull(lastLeg?.arrivalTerminal ?? values.arrivalTerminal),
     departureGate: emptyToNull(firstLeg?.departureGate ?? values.departureGate),
     arrivalGate: emptyToNull(lastLeg?.arrivalGate ?? values.arrivalGate),
-    departureTime: firstLeg?.departureTime ?? values.departureTime,
-    arrivalTime: lastLeg?.arrivalTime ?? values.arrivalTime,
+    departureTime: normalizeWallClockForStorage(firstLeg?.departureTime ?? values.departureTime),
+    arrivalTime: normalizeWallClockForStorage(lastLeg?.arrivalTime ?? values.arrivalTime),
     seat: emptyToNull(firstLeg?.seat ?? values.seat),
     travelClass: values.travelClass,
     baggageAllowance: emptyToNull(values.baggageAllowance),

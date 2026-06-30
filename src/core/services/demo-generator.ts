@@ -1,5 +1,6 @@
 import type { BookingStatus, TravelClass } from "@/core/domain/enums";
 import type { CreateBookingInput } from "@/core/repositories/booking-repository";
+import { wallClockFromLocalDate } from "@/lib/datetime/wall-clock";
 import { AIRLINES, AIRPORTS } from "@/lib/flight-catalog";
 
 const FIRST_NAMES = ["Amelia", "Noah", "Olivia", "Liam", "Sophia", "Omar", "Aisha", "Mateo", "Yuki", "Priya"];
@@ -52,8 +53,8 @@ export function generateDemoBooking(): CreateBookingInput {
     arrivalTerminal: String(randomInt(1, 5)),
     departureGate: `${pick(["A", "B", "C", "D"])}${randomInt(1, 40)}`,
     arrivalGate: `${pick(["A", "B", "C", "D"])}${randomInt(1, 40)}`,
-    departureTime: departure.toISOString(),
-    arrivalTime: arrival.toISOString(),
+    departureTime: wallClockFromLocalDate(departure),
+    arrivalTime: wallClockFromLocalDate(arrival),
     seat: `${randomInt(1, 45)}${pick(["A", "B", "C", "D", "E", "F"])}`,
     travelClass: pick(TRAVEL_CLASSES),
     baggageAllowance: pick(BAGGAGE),

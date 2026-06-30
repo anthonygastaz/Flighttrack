@@ -12,21 +12,10 @@ import type {
 import { type BookingFormInput, bookingFormSchema, bookingFormValuesToInput } from "@/lib/validation/booking-schema";
 import { withAdmin } from "./action-helpers";
 
-/** Convert a datetime-local string to a UTC ISO timestamp. */
-function toIso(value: string): string {
-  const date = new Date(value);
-  return date.toISOString();
-}
-
 function formValuesToInput(
   values: ReturnType<typeof bookingFormSchema.parse>,
 ): CreateBookingInput {
-  const mapped = bookingFormValuesToInput(values);
-  return {
-    ...mapped,
-    departureTime: toIso(mapped.departureTime),
-    arrivalTime: toIso(mapped.arrivalTime),
-  };
+  return bookingFormValuesToInput(values);
 }
 
 function revalidateBookingViews(reference?: string, id?: string) {
@@ -82,11 +71,8 @@ export async function updateBookingAction(
       return err("not_found", "Booking not found.");
     }
 
-    const mapped = formValuesToInput(parsed.data);
     const input: UpdateBookingInput = {
-      ...mapped,
-      departureTime: toIso(mapped.departureTime),
-      arrivalTime: toIso(mapped.arrivalTime),
+      ...formValuesToInput(parsed.data),
       bookingReference: parsed.data.bookingReference || undefined,
     };
     const result = await services.bookings.update(id, input);

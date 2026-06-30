@@ -1,6 +1,5 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
 import {
   Armchair,
@@ -29,7 +28,8 @@ import { Button } from "@/components/ui/button";
 import type { Booking } from "@/core/domain/booking";
 import type { FlightStatusResult } from "@/core/domain/flight";
 import { APP_NAME, APP_NAME_SLUG } from "@/lib/brand";
-import { airlineLogoUrl, formatDateTime } from "@/lib/format";
+import { formatWallClock } from "@/lib/datetime/wall-clock";
+import { airlineLogoUrl, formatInstantDateTime } from "@/lib/format";
 import { boardingPassFromBooking } from "@/lib/tickets/boarding-pass";
 import { downloadElementAsPdf } from "@/lib/tickets/download-pdf";
 import type { TripItineraryItem } from "@/lib/tickets/trip-details";
@@ -100,10 +100,10 @@ function ItineraryTimeline({ items }: { items: TripItineraryItem[] }) {
               <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr]">
                 <div>
                   <p className="text-2xl font-bold text-slate-900">
-                    {format(parseISO(item.departureTime), "h:mm a")}
+                    {formatWallClock(item.departureTime, "h:mm a")}
                   </p>
                   <p className="text-sm text-slate-500">
-                    {format(parseISO(item.departureTime), "MMM d")}
+                    {formatWallClock(item.departureTime, "MMM d")}
                   </p>
                   <p className="mt-2 font-medium text-slate-900">{item.fromCity}</p>
                   <p className="text-sm text-slate-500">{item.fromAirportName}</p>
@@ -123,10 +123,10 @@ function ItineraryTimeline({ items }: { items: TripItineraryItem[] }) {
 
                 <div className="sm:text-right">
                   <p className="text-2xl font-bold text-slate-900">
-                    {format(parseISO(item.arrivalTime), "h:mm a")}
+                    {formatWallClock(item.arrivalTime, "h:mm a")}
                   </p>
                   <p className="text-sm text-slate-500">
-                    {format(parseISO(item.arrivalTime), "MMM d")}
+                    {formatWallClock(item.arrivalTime, "MMM d")}
                   </p>
                   <p className="mt-2 font-medium text-slate-900">{item.toCity}</p>
                   <p className="text-sm text-slate-500">{item.toAirportName}</p>
@@ -426,7 +426,7 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
                       <span className="text-xs uppercase tracking-wide">Est. departure</span>
                     </div>
                     <p className="mt-2 font-medium text-slate-900">
-                      {formatDateTime(trip.liveFlight.estimatedDeparture)}
+                      {formatInstantDateTime(trip.liveFlight.estimatedDeparture)}
                     </p>
                   </div>
                 ) : null}
@@ -437,7 +437,7 @@ export function BookingTripView({ booking, liveFlight }: BookingTripViewProps) {
                       <span className="text-xs uppercase tracking-wide">Est. arrival</span>
                     </div>
                     <p className="mt-2 font-medium text-slate-900">
-                      {formatDateTime(trip.liveFlight.estimatedArrival)}
+                      {formatInstantDateTime(trip.liveFlight.estimatedArrival)}
                     </p>
                   </div>
                 ) : null}

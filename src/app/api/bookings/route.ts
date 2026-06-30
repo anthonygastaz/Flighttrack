@@ -5,17 +5,8 @@ import { statusForError } from "@/core/domain/result";
 import { requireAdmin } from "@/lib/auth/admin";
 import { bookingFormSchema, bookingFormValuesToInput } from "@/lib/validation/booking-schema";
 
-function toIso(value: string): string {
-  return new Date(value).toISOString();
-}
-
 function toCreateInput(values: ReturnType<typeof bookingFormSchema.parse>) {
-  const mapped = bookingFormValuesToInput(values);
-  return {
-    ...mapped,
-    departureTime: toIso(mapped.departureTime),
-    arrivalTime: toIso(mapped.arrivalTime),
-  };
+  return bookingFormValuesToInput(values);
 }
 
 /** POST /api/bookings — create a booking (admin). */

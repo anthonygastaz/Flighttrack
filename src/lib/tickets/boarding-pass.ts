@@ -1,10 +1,9 @@
-import { differenceInMinutes, format, parseISO } from "date-fns";
-
 import type { Booking } from "@/core/domain/booking";
 import { formatLayoverDuration, passengerFullName, stopsLabel } from "@/core/domain/booking";
 import { TRAVEL_CLASS_LABELS } from "@/core/domain/enums";
 import { findAirportByIata } from "@/lib/airports/search";
-import { formatTime } from "@/lib/format";
+import { formatWallClock, wallClockDifferenceMinutes } from "@/lib/datetime/wall-clock";
+import { formatTime12 } from "@/lib/format";
 
 export interface BoardingPassData {
   reference: string;
@@ -37,23 +36,15 @@ function airportLocation(iata: string, fallbackCity: string | null): string {
   return airport.city;
 }
 
-function formatDurationLabel(departureIso: string, arrivalIso: string): string {
-  try {
-    const minutes = differenceInMinutes(parseISO(arrivalIso), parseISO(departureIso));
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${String(hours).padStart(2, "0")}h ${String(mins).padStart(2, "0")}m`;
-  } catch {
-    return "—";
-  }
+function formatDurationLabel(departureStored: string, arrivalStored: string): string {
+  const minutes = wallClockDifferenceMinutes(departureStored, arrivalStored);
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${String(hours).padStart(2, "0")}h ${String(mins).padStart(2, "0")}m`;
 }
 
-function formatTicketDate(iso: string): string {
-  try {
-    return format(parseISO(iso), "d MMM yy");
-  } catch {
-    return iso;
-  }
+function formatTicketDate(stored: string): string {
+  return formatWallClock(stored, "d MMM yy");
 }
 
 function buildTicketCode(booking: Booking): string {
@@ -69,10 +60,10 @@ export function boardingPassFromBooking(booking: Booking): BoardingPassData {
     flightNumber: booking.flightNumber,
     departureAirport: booking.departureAirport,
     departureLocation: airportLocation(booking.departureAirport, booking.departureCity),
-    departureTime: formatTime(booking.departureTime),
+    departureTime: formatTime12(booking.departureTime),
     arrivalAirport: booking.arrivalAirport,
     arrivalLocation: airportLocation(booking.arrivalAirport, booking.arrivalCity),
-    arrivalTime: formatTime(booking.arrivalTime),
+    arrivalTime: formatTime12(booking.arrivalTime),
     durationLabel: formatDurationLabel(booking.departureTime, booking.arrivalTime),
     stopsLabel: stopsLabel(booking.stops),
     layoverSummary:
