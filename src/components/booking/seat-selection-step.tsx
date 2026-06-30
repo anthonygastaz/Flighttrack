@@ -30,8 +30,6 @@ interface SeatSelectionStepProps {
   onContinue: () => void;
   onBack: () => void;
   error?: string;
-  /** Mobile modal: pin actions to the footer. */
-  variant?: "default" | "modal";
 }
 
 export function SeatSelectionStep({
@@ -42,7 +40,6 @@ export function SeatSelectionStep({
   onContinue,
   onBack,
   error,
-  variant = "default",
 }: SeatSelectionStepProps) {
   const [activeSectionId, setActiveSectionId] = useState(() => sectionForTravelClass(travelClass));
 
@@ -83,19 +80,8 @@ export function SeatSelectionStep({
       : `Select ${adults} seats (${value.length}/${adults})`;
 
   return (
-    <div
-      className={cn(
-        "text-zinc-900",
-        variant === "modal" ? "flex min-h-0 flex-1 flex-col" : "space-y-5",
-      )}
-    >
-      <div
-        className={cn(
-          "space-y-5",
-          variant === "modal" && "min-h-0 flex-1 overflow-y-auto",
-        )}
-      >
-        <div className="flex items-center justify-between gap-3">
+    <div className="space-y-5 text-zinc-900">
+      <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -168,7 +154,7 @@ export function SeatSelectionStep({
             </div>
           </div>
 
-          <div className="overflow-x-auto pb-1">
+          <div className="touch-pan-x overflow-x-auto pb-1">
             <SeatMap
               section={section}
               occupied={occupied}
@@ -187,19 +173,9 @@ export function SeatSelectionStep({
           </p>
         )}
 
-        {error && variant === "default" && <p className="text-sm text-red-600">{error}</p>}
-      </div>
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {error && variant === "modal" && (
-        <p className="shrink-0 px-0 pt-2 text-sm text-red-600">{error}</p>
-      )}
-
-      <div
-        className={cn(
-          "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-          variant === "modal" && "shrink-0 border-t border-zinc-100 bg-white pt-3",
-        )}
-      >
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
           type="button"
           variant="outline"

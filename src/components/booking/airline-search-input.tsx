@@ -60,7 +60,11 @@ export function AirlineSearchInput({
   }, []);
 
   useEffect(() => {
-    if (value && !open) {
+    if (!value) {
+      setQuery("");
+      return;
+    }
+    if (!open) {
       void resolveLabel(value);
     }
   }, [value, open, resolveLabel]);
@@ -89,7 +93,11 @@ export function AirlineSearchInput({
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setOpen(false);
-        if (value) void resolveLabel(value);
+        if (value) {
+          void resolveLabel(value);
+        } else {
+          setQuery("");
+        }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -120,7 +128,11 @@ export function AirlineSearchInput({
       selectAirline(suggestions[activeIndex]!);
     } else if (event.key === "Escape") {
       setOpen(false);
-      if (value) void resolveLabel(value);
+      if (value) {
+        void resolveLabel(value);
+      } else {
+        setQuery("");
+      }
     }
   }
 
@@ -132,10 +144,18 @@ export function AirlineSearchInput({
           onChange={(e) => {
             const next = e.target.value;
             setQuery(next);
-            setOpen(next.trim().length > 0);
+            const trimmed = next.trim();
+            setOpen(trimmed.length > 0);
+            if (!trimmed) {
+              onChange("");
+            }
           }}
           onFocus={() => {
-            if (query.trim()) setOpen(true);
+            if (value) {
+              setQuery("");
+              onChange("");
+            }
+            setOpen(false);
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
@@ -145,7 +165,7 @@ export function AirlineSearchInput({
           aria-autocomplete="list"
           autoComplete="off"
           className={cn(
-            "border-white/20 bg-white/10 pr-9 text-white placeholder:text-white/40",
+            "border-white/20 bg-white/10 pr-9 text-white placeholder:text-white/30",
             inputClassName,
           )}
         />

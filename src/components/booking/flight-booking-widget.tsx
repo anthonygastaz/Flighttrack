@@ -62,11 +62,11 @@ export function FlightBookingWidget() {
     resolver: zodResolver(publicBookingSchema),
     defaultValues: {
       tripType: "round-trip",
-      from: "LHR",
-      to: "JFK",
+      from: "",
+      to: "",
       departureDate: defaultDate(7),
       returnDate: defaultDate(14),
-      airlineIata: "BR",
+      airlineIata: "",
       passengerFirstName: "",
       passengerLastName: "",
       email: "",
@@ -103,7 +103,6 @@ export function FlightBookingWidget() {
               onContinue={onSeatsContinue}
               onBack={() => setStep("search")}
               error={form.formState.errors.seats?.message}
-              variant={showSeatModal ? "modal" : "default"}
             />
           </FormControl>
         </FormItem>
@@ -274,7 +273,7 @@ export function FlightBookingWidget() {
                                     <AirportSearchInput
                                       value={field.value}
                                       onChange={field.onChange}
-                                      placeholder="City or airport"
+                                      placeholder="e.g. London (LHR)"
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -291,7 +290,7 @@ export function FlightBookingWidget() {
                                     <AirportSearchInput
                                       value={field.value}
                                       onChange={field.onChange}
-                                      placeholder="City or airport"
+                                      placeholder="e.g. New York (JFK)"
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -356,7 +355,7 @@ export function FlightBookingWidget() {
                                     <AirlineSearchInput
                                       value={field.value}
                                       onChange={field.onChange}
-                                      placeholder="Search airline"
+                                      placeholder="e.g. EVA Air (BR)"
                                     />
                                   </FormControl>
                                   <FormMessage />

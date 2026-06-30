@@ -176,4 +176,11 @@
     margin-left: auto;
     flex-shrink: 0;
   }
+
+  /* Mobile seat modal: momentum scrolling inside the dialog */
+  .seat-modal-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
 }
