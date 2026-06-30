@@ -41,7 +41,10 @@ export function SeatSelectionModal({
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] md:hidden">
+        // Center with flexbox (not transforms): framer-motion animates the
+        // dialog's `transform` for the scale effect, which would override any
+        // CSS translate used for centering and push the modal off-center.
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 md:hidden">
           <motion.button
             type="button"
             aria-label="Close seat selection"
@@ -58,7 +61,7 @@ export function SeatSelectionModal({
             aria-modal="true"
             aria-label="Choose seats"
             className={cn(
-              "absolute left-1/2 top-1/2 flex h-[min(92dvh,680px)] max-h-[92dvh] w-[calc(100vw-1.25rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl",
+              "relative flex h-[min(92dvh,680px)] max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl",
               className,
             )}
             initial={{ opacity: 0, scale: 0.96 }}
