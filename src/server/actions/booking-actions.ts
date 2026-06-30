@@ -9,7 +9,7 @@ import type {
   CreateBookingInput,
   UpdateBookingInput,
 } from "@/core/repositories/booking-repository";
-import { type BookingFormInput, bookingFormSchema } from "@/lib/validation/booking-schema";
+import { type BookingFormInput, bookingFormSchema, bookingFormValuesToInput } from "@/lib/validation/booking-schema";
 import { withAdmin } from "./action-helpers";
 
 /** Convert a datetime-local string to a UTC ISO timestamp. */
@@ -21,30 +21,11 @@ function toIso(value: string): string {
 function formValuesToInput(
   values: ReturnType<typeof bookingFormSchema.parse>,
 ): CreateBookingInput {
+  const mapped = bookingFormValuesToInput(values);
   return {
-    passengerFirstName: values.passengerFirstName,
-    passengerLastName: values.passengerLastName,
-    email: values.email,
-    phone: values.phone,
-    airline: values.airline,
-    airlineIata: values.airlineIata,
-    flightNumber: values.flightNumber,
-    departureAirport: values.departureAirport,
-    arrivalAirport: values.arrivalAirport,
-    departureCity: values.departureCity,
-    arrivalCity: values.arrivalCity,
-    departureTerminal: values.departureTerminal,
-    arrivalTerminal: values.arrivalTerminal,
-    departureGate: values.departureGate,
-    arrivalGate: values.arrivalGate,
-    departureTime: toIso(values.departureTime),
-    arrivalTime: toIso(values.arrivalTime),
-    seat: values.seat,
-    travelClass: values.travelClass,
-    baggageAllowance: values.baggageAllowance,
-    status: values.status,
-    bookingSource: values.bookingSource,
-    notes: values.notes,
+    ...mapped,
+    departureTime: toIso(mapped.departureTime),
+    arrivalTime: toIso(mapped.arrivalTime),
   };
 }
 
@@ -89,13 +70,33 @@ export async function updateBookingAction(
       return err("validation_error", "Please fix the highlighted fields.", parsed.error.flatten().fieldErrors);
     }
 
+    if (!parsed.data.bookingReference) {
+      return err("validation_error", "Booking code is required.", {
+        bookingReference: ["Enter the 13-digit booking code."],
+      });
+    }
+
     const services = getServices();
-    const input: UpdateBookingInput = formValuesToInput(parsed.data);
+    const existing = await services.bookings.getById(id);
+    if (!existing) {
+      return err("not_found", "Booking not found.");
+    }
+
+    const mapped = formValuesToInput(parsed.data);
+    const input: UpdateBookingInput = {
+      ...mapped,
+      departureTime: toIso(mapped.departureTime),
+      arrivalTime: toIso(mapped.arrivalTime),
+      bookingReference: parsed.data.bookingReference || undefined,
+    };
     const result = await services.bookings.update(id, input);
     if (!result.ok) return result;
 
     const booking = result.data;
     revalidateBookingViews(booking.bookingReference, booking.id);
+    if (existing.bookingReference !== booking.bookingReference) {
+      revalidatePath(`/booking/${existing.bookingReference}`);
+    }
     void services.notifications.notify("booking_updated", booking);
 
     return ok({ id: booking.id, reference: booking.bookingReference });

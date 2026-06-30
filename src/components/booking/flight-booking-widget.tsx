@@ -208,7 +208,6 @@ export function FlightBookingWidget() {
                   <BoardingPassScreen
                     variant="embedded"
                     data={boardingPassData}
-                    notchColor="#0a1628"
                     footer={
                       <div className="flex flex-col gap-2 sm:flex-row">
                         <Button
@@ -216,7 +215,7 @@ export function FlightBookingWidget() {
                           variant="outline"
                           className="h-11 flex-1 rounded-full border-white/30 bg-transparent text-white hover:bg-white/10"
                         >
-                          <Link href={`/booking/${reference}`}>View full boarding pass</Link>
+                          <Link href={`/booking/${reference}`}>View full trip details</Link>
                         </Button>
                         <Button
                           type="button"

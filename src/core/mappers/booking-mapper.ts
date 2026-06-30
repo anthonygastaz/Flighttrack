@@ -1,9 +1,46 @@
-import type { Booking } from "@/core/domain/booking";
+import type { Booking, Layover } from "@/core/domain/booking";
 import type {
   CreateBookingInput,
   UpdateBookingInput,
 } from "@/core/repositories/booking-repository";
 import type { BookingInsert, BookingRow, BookingUpdate } from "@/lib/supabase/types";
+
+function parseLayovers(value: unknown): Layover[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      const airport = typeof row.airport === "string" ? row.airport : null;
+      const durationMinutes =
+        typeof row.duration_minutes === "number"
+          ? row.duration_minutes
+          : typeof row.durationMinutes === "number"
+            ? row.durationMinutes
+            : null;
+      if (!airport || durationMinutes === null) return null;
+      return {
+        airport,
+        city: typeof row.city === "string" ? row.city : null,
+        durationMinutes,
+      } satisfies Layover;
+    })
+    .filter((item): item is Layover => item !== null);
+}
+
+function layoversToJson(layovers: Layover[]): Layover[] {
+  return layovers.map((layover) => ({
+    airport: layover.airport,
+    city: layover.city,
+    durationMinutes: layover.durationMinutes,
+  }));
+}
+
+function parseNumeric(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
 
 /** Map a database row (snake_case) to the domain entity (camelCase). */
 export function rowToBooking(row: BookingRow): Booking {
@@ -21,6 +58,8 @@ export function rowToBooking(row: BookingRow): Booking {
     arrivalAirport: row.arrival_airport,
     departureCity: row.departure_city,
     arrivalCity: row.arrival_city,
+    stops: row.stops ?? 0,
+    layovers: parseLayovers(row.layovers),
     departureTerminal: row.departure_terminal,
     arrivalTerminal: row.arrival_terminal,
     departureGate: row.departure_gate,
@@ -30,6 +69,20 @@ export function rowToBooking(row: BookingRow): Booking {
     seat: row.seat,
     travelClass: row.travel_class,
     baggageAllowance: row.baggage_allowance,
+    billingName: row.billing_name,
+    billingEmail: row.billing_email,
+    billingPhone: row.billing_phone,
+    billingAddressLine1: row.billing_address_line1,
+    billingAddressLine2: row.billing_address_line2,
+    billingCity: row.billing_city,
+    billingState: row.billing_state,
+    billingPostalCode: row.billing_postal_code,
+    billingCountry: row.billing_country,
+    paymentMethod: row.payment_method,
+    fareSubtotal: parseNumeric(row.fare_subtotal),
+    taxesFees: parseNumeric(row.taxes_fees),
+    totalPrice: parseNumeric(row.total_price),
+    currency: row.currency ?? "USD",
     status: row.status,
     bookingSource: row.booking_source,
     notes: row.notes,
@@ -53,6 +106,8 @@ export function createInputToRow(input: CreateBookingInput, reference: string): 
     arrival_airport: input.arrivalAirport,
     departure_city: input.departureCity ?? null,
     arrival_city: input.arrivalCity ?? null,
+    stops: input.stops ?? 0,
+    layovers: layoversToJson(input.layovers ?? []),
     departure_terminal: input.departureTerminal ?? null,
     arrival_terminal: input.arrivalTerminal ?? null,
     departure_gate: input.departureGate ?? null,
@@ -62,6 +117,20 @@ export function createInputToRow(input: CreateBookingInput, reference: string): 
     seat: input.seat ?? null,
     travel_class: input.travelClass,
     baggage_allowance: input.baggageAllowance ?? null,
+    billing_name: input.billingName ?? null,
+    billing_email: input.billingEmail ?? null,
+    billing_phone: input.billingPhone ?? null,
+    billing_address_line1: input.billingAddressLine1 ?? null,
+    billing_address_line2: input.billingAddressLine2 ?? null,
+    billing_city: input.billingCity ?? null,
+    billing_state: input.billingState ?? null,
+    billing_postal_code: input.billingPostalCode ?? null,
+    billing_country: input.billingCountry ?? null,
+    payment_method: input.paymentMethod ?? null,
+    fare_subtotal: input.fareSubtotal ?? null,
+    taxes_fees: input.taxesFees ?? null,
+    total_price: input.totalPrice ?? null,
+    currency: input.currency ?? "USD",
     status: input.status,
     booking_source: input.bookingSource ?? "demo",
     notes: input.notes ?? null,
@@ -86,6 +155,8 @@ export function updateInputToRow(input: UpdateBookingInput): BookingUpdate {
   set("arrival_airport", input.arrivalAirport);
   set("departure_city", input.departureCity);
   set("arrival_city", input.arrivalCity);
+  set("stops", input.stops);
+  set("layovers", input.layovers ? layoversToJson(input.layovers) : undefined);
   set("departure_terminal", input.departureTerminal);
   set("arrival_terminal", input.arrivalTerminal);
   set("departure_gate", input.departureGate);
@@ -95,9 +166,24 @@ export function updateInputToRow(input: UpdateBookingInput): BookingUpdate {
   set("seat", input.seat);
   set("travel_class", input.travelClass);
   set("baggage_allowance", input.baggageAllowance);
+  set("billing_name", input.billingName);
+  set("billing_email", input.billingEmail);
+  set("billing_phone", input.billingPhone);
+  set("billing_address_line1", input.billingAddressLine1);
+  set("billing_address_line2", input.billingAddressLine2);
+  set("billing_city", input.billingCity);
+  set("billing_state", input.billingState);
+  set("billing_postal_code", input.billingPostalCode);
+  set("billing_country", input.billingCountry);
+  set("payment_method", input.paymentMethod);
+  set("fare_subtotal", input.fareSubtotal);
+  set("taxes_fees", input.taxesFees);
+  set("total_price", input.totalPrice);
+  set("currency", input.currency);
   set("status", input.status);
   set("booking_source", input.bookingSource);
   set("notes", input.notes);
+  set("booking_reference", input.bookingReference);
 
   return row;
 }

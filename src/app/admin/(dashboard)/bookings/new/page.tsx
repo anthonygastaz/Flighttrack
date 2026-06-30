@@ -8,7 +8,7 @@ export default function NewBookingPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <AdminPageHeader
         title="Create booking"
-        description="A unique 6-character booking reference will be generated automatically."
+        description="A unique 13-digit booking reference will be generated automatically."
       />
       <Card className="admin-panel border-zinc-200/80">
         <CardHeader>

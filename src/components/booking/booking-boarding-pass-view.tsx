@@ -1,18 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
-
-import { BoardingPassScreen } from "@/components/booking/boarding-pass-screen";
 import type { Booking } from "@/core/domain/booking";
-import { boardingPassFromBooking } from "@/lib/tickets/boarding-pass";
+import type { FlightStatusResult } from "@/core/domain/flight";
+
+import { BookingTripView } from "@/components/booking/booking-trip-view";
 
 interface BookingBoardingPassViewProps {
   booking: Booking;
-  backHref?: string;
+  liveFlight?: FlightStatusResult | null;
 }
 
-export function BookingBoardingPassView({ booking, backHref = "/track" }: BookingBoardingPassViewProps) {
-  const data = useMemo(() => boardingPassFromBooking(booking), [booking]);
-
-  return <BoardingPassScreen variant="page" data={data} backHref={backHref} />;
+export function BookingBoardingPassView({
+  booking,
+  liveFlight,
+}: BookingBoardingPassViewProps) {
+  return <BookingTripView booking={booking} liveFlight={liveFlight} />;
 }

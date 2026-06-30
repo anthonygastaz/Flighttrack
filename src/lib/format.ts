@@ -38,6 +38,21 @@ export function toDatetimeLocalValue(iso: string): string {
   }
 }
 
+/** Format a currency amount for display. */
+export function formatMoney(amount: number | null | undefined, currency = "USD"): string | null {
+  if (amount === null || amount === undefined) return null;
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toFixed(2)}`;
+  }
+}
+
 /** Airline logo URL via avs.io CDN. */
 export function airlineLogoUrl(iata: string | null, size = 80): string {
   const code = (iata ?? "XX").toUpperCase().slice(0, 2);

@@ -7,10 +7,21 @@ import { statusForError } from "@/core/domain/result";
 import { TRAVEL_CLASS_LABELS, BOOKING_STATUS_LABELS } from "@/core/domain/enums";
 import { requireAdmin } from "@/lib/auth/admin";
 import { normalizeBookingReference } from "@/core/services/booking-reference";
-import { bookingFormSchema } from "@/lib/validation/booking-schema";
+import { bookingFormSchema, bookingFormValuesToInput } from "@/lib/validation/booking-schema";
 
 function toIso(value: string): string {
   return new Date(value).toISOString();
+}
+
+function toUpdateInput(values: ReturnType<typeof bookingFormSchema.parse>) {
+  const mapped = bookingFormValuesToInput(values);
+  const { bookingReference, ...rest } = mapped;
+  return {
+    ...rest,
+    departureTime: toIso(mapped.departureTime),
+    arrivalTime: toIso(mapped.arrivalTime),
+    ...(bookingReference ? { bookingReference } : {}),
+  };
 }
 
 function serializeBooking(booking: Booking) {
@@ -95,31 +106,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const values = parsed.data;
-    const result = await services.bookings.update(existing.id, {
-      passengerFirstName: values.passengerFirstName,
-      passengerLastName: values.passengerLastName,
-      email: values.email,
-      phone: values.phone,
-      airline: values.airline,
-      airlineIata: values.airlineIata,
-      flightNumber: values.flightNumber,
-      departureAirport: values.departureAirport,
-      arrivalAirport: values.arrivalAirport,
-      departureCity: values.departureCity,
-      arrivalCity: values.arrivalCity,
-      departureTerminal: values.departureTerminal,
-      arrivalTerminal: values.arrivalTerminal,
-      departureGate: values.departureGate,
-      arrivalGate: values.arrivalGate,
-      departureTime: toIso(values.departureTime),
-      arrivalTime: toIso(values.arrivalTime),
-      seat: values.seat,
-      travelClass: values.travelClass,
-      baggageAllowance: values.baggageAllowance,
-      status: values.status,
-      bookingSource: values.bookingSource,
-      notes: values.notes,
-    });
+    const result = await services.bookings.update(existing.id, toUpdateInput(values));
 
     if (!result.ok) {
       return NextResponse.json(

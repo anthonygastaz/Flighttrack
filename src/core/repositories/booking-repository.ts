@@ -1,4 +1,4 @@
-import type { Booking } from "@/core/domain/booking";
+import type { Booking, Layover } from "@/core/domain/booking";
 import type { BookingSource, BookingStatus, TravelClass } from "@/core/domain/enums";
 import type { BookingQuery, Paginated } from "@/core/domain/pagination";
 
@@ -15,6 +15,8 @@ export interface CreateBookingInput {
   arrivalAirport: string;
   departureCity?: string | null;
   arrivalCity?: string | null;
+  stops?: number;
+  layovers?: Layover[];
   departureTerminal?: string | null;
   arrivalTerminal?: string | null;
   departureGate?: string | null;
@@ -24,12 +26,30 @@ export interface CreateBookingInput {
   seat?: string | null;
   travelClass: TravelClass;
   baggageAllowance?: string | null;
+  billingName?: string | null;
+  billingEmail?: string | null;
+  billingPhone?: string | null;
+  billingAddressLine1?: string | null;
+  billingAddressLine2?: string | null;
+  billingCity?: string | null;
+  billingState?: string | null;
+  billingPostalCode?: string | null;
+  billingCountry?: string | null;
+  paymentMethod?: string | null;
+  fareSubtotal?: number | null;
+  taxesFees?: number | null;
+  totalPrice?: number | null;
+  currency?: string;
   status: BookingStatus;
   bookingSource?: BookingSource;
   notes?: string | null;
+  /** Admin override on create; omit or null to auto-generate. */
+  bookingReference?: string | null;
 }
 
-export type UpdateBookingInput = Partial<CreateBookingInput>;
+export type UpdateBookingInput = Partial<Omit<CreateBookingInput, "bookingReference">> & {
+  bookingReference?: string;
+};
 
 /**
  * Persistence boundary for bookings. The application layer depends on this

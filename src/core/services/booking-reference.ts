@@ -1,23 +1,17 @@
 import { randomInt } from "node:crypto";
 
-import {
-  BOOKING_REFERENCE_ALPHABET,
-  BOOKING_REFERENCE_LENGTH,
-} from "@/core/services/booking-reference-utils";
-
 export {
   BOOKING_REFERENCE_PATTERN,
   isValidBookingReference,
   normalizeBookingReference,
 } from "@/core/services/booking-reference-utils";
 
+const MIN_BOOKING_REFERENCE = 1_000_000_000_000;
+const MAX_BOOKING_REFERENCE_EXCLUSIVE = 10_000_000_000_000;
+
 /** Generate a single candidate reference (not yet collision-checked). */
 export function generateBookingReference(): string {
-  let reference = "";
-  for (let i = 0; i < BOOKING_REFERENCE_LENGTH; i += 1) {
-    reference += BOOKING_REFERENCE_ALPHABET[randomInt(BOOKING_REFERENCE_ALPHABET.length)];
-  }
-  return reference;
+  return String(randomInt(MIN_BOOKING_REFERENCE, MAX_BOOKING_REFERENCE_EXCLUSIVE));
 }
 
 /**

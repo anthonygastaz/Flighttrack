@@ -29,7 +29,7 @@ export default async function EditBookingPage({ params }: PageProps) {
     <div className="mx-auto max-w-3xl space-y-6">
       <AdminPageHeader
         title="Edit booking"
-        description={`${booking.bookingReference} · Update passenger, flight, gate, seat, and status.`}
+        description={`${booking.bookingReference} · Update booking code, passenger, flight, and status.`}
       >
         <Button
           asChild

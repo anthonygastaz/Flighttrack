@@ -1,15 +1,12 @@
 "use client";
 
-import { toPng } from "html-to-image";
-import { ArrowLeft, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, Share2, Ticket } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
-import { BoardingPassTicket } from "@/components/booking/boarding-pass-ticket";
+import { ETicketModal } from "@/components/booking/e-ticket-modal";
 import { Button } from "@/components/ui/button";
-import { APP_NAME_SLUG } from "@/lib/brand";
 import type { BoardingPassData } from "@/lib/tickets/boarding-pass";
-import { BRAND_NAVY } from "@/lib/brand-colors";
 import { cn } from "@/lib/utils";
 
 interface BoardingPassScreenProps {
@@ -18,7 +15,6 @@ interface BoardingPassScreenProps {
   variant?: "page" | "embedded";
   backHref?: string;
   onBack?: () => void;
-  notchColor?: string;
   className?: string;
   footer?: React.ReactNode;
 }
@@ -28,30 +24,10 @@ export function BoardingPassScreen({
   variant = "page",
   backHref = "/",
   onBack,
-  notchColor = BRAND_NAVY,
   className,
   footer,
 }: BoardingPassScreenProps) {
-  const ticketRef = useRef<HTMLDivElement>(null);
-  const [downloading, setDownloading] = useState(false);
-
-  const downloadETicket = useCallback(async () => {
-    if (!ticketRef.current || downloading) return;
-    setDownloading(true);
-    try {
-      const dataUrl = await toPng(ticketRef.current, {
-        pixelRatio: 2,
-        backgroundColor: notchColor,
-        cacheBust: true,
-      });
-      const link = document.createElement("a");
-      link.download = `${APP_NAME_SLUG}-e-ticket-${data.reference}.png`;
-      link.href = dataUrl;
-      link.click();
-    } finally {
-      setDownloading(false);
-    }
-  }, [data.reference, downloading, notchColor]);
+  const [eTicketOpen, setETicketOpen] = useState(false);
 
   const shareTicket = useCallback(async () => {
     const url = typeof window !== "undefined" ? window.location.href : `/booking/${data.reference}`;
@@ -97,7 +73,7 @@ export function BoardingPassScreen({
               <ArrowLeft className="size-5" />
             </Link>
           )}
-          <h1 className="text-base font-medium">Boarding Pass</h1>
+          <h1 className="text-base font-medium">Booking confirmed</h1>
           <button
             type="button"
             onClick={shareTicket}
@@ -119,20 +95,31 @@ export function BoardingPassScreen({
           <p className="text-center text-sm uppercase tracking-widest text-white/60">Booking confirmed</p>
         )}
 
-        <BoardingPassTicket ref={ticketRef} data={data} notchColor={notchColor} className="w-full" />
+        <div className="w-full max-w-md">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
+            <p className="text-sm text-white/60">Your trip is confirmed</p>
+            <p className="mt-2 font-mono text-lg text-white">#{data.reference}</p>
+            <p className="mt-1 text-white/80">
+              {data.airline} · {data.departureAirport} → {data.arrivalAirport}
+            </p>
+            <p className="mt-1 text-sm text-white/50">{data.passengerName}</p>
+          </div>
+        </div>
 
         <div className={cn("mt-6 w-full max-w-md space-y-3", !isPage && "mt-4")}>
           <Button
             type="button"
-            onClick={downloadETicket}
-            disabled={downloading}
+            onClick={() => setETicketOpen(true)}
             className="h-12 w-full rounded-full bg-[#0055FF] text-base font-medium text-white hover:bg-[#0046E0]"
           >
-            {downloading ? <Loader2 className="size-5 animate-spin" /> : "Download E-Ticket"}
+            <Ticket className="mr-2 size-5" />
+            View E-Ticket
           </Button>
           {footer}
         </div>
       </div>
+
+      <ETicketModal open={eTicketOpen} onOpenChange={setETicketOpen} data={data} />
     </div>
   );
 }

@@ -10,7 +10,13 @@ import type {
   CreateBookingInput,
   UpdateBookingInput,
 } from "@/core/repositories/booking-repository";
+import {
+  formatBookingPersistenceError,
+  shouldRetryWithoutBillingColumns,
+  shouldRetryWithoutLayoverColumns,
+} from "@/core/repositories/supabase-errors";
 import type { AppSupabaseClient } from "@/lib/supabase/server";
+import type { BookingInsert } from "@/lib/supabase/types";
 
 type Client = AppSupabaseClient;
 
@@ -116,12 +122,56 @@ export class SupabaseBookingRepository implements BookingRepository {
   }
 
   async create(input: CreateBookingInput, reference: string): Promise<Booking> {
-    const { data, error } = await this.client
-      .from(TABLE)
-      .insert(createInputToRow(input, reference))
-      .select("*")
-      .single();
+    const row = createInputToRow(input, reference);
 
+    try {
+      return await this.insertRow(row);
+    } catch (error) {
+      const needsLayoverStrip = shouldRetryWithoutLayoverColumns(error);
+      const needsBillingStrip = shouldRetryWithoutBillingColumns(error);
+
+      if (!needsLayoverStrip && !needsBillingStrip) {
+        throw new Error(formatBookingPersistenceError(error));
+      }
+
+      let nextRow: BookingInsert = row;
+
+      if (needsLayoverStrip) {
+        const { stops: _stops, layovers: _layovers, ...withoutLayovers } = nextRow;
+        nextRow = withoutLayovers as BookingInsert;
+      }
+
+      if (needsBillingStrip) {
+        const {
+          billing_name: _billingName,
+          billing_email: _billingEmail,
+          billing_phone: _billingPhone,
+          billing_address_line1: _billingAddressLine1,
+          billing_address_line2: _billingAddressLine2,
+          billing_city: _billingCity,
+          billing_state: _billingState,
+          billing_postal_code: _billingPostalCode,
+          billing_country: _billingCountry,
+          payment_method: _paymentMethod,
+          fare_subtotal: _fareSubtotal,
+          taxes_fees: _taxesFees,
+          total_price: _totalPrice,
+          currency: _currency,
+          ...withoutBilling
+        } = nextRow;
+        nextRow = withoutBilling as BookingInsert;
+      }
+
+      try {
+        return await this.insertRow(nextRow);
+      } catch (retryError) {
+        throw new Error(formatBookingPersistenceError(retryError));
+      }
+    }
+  }
+
+  private async insertRow(row: BookingInsert): Promise<Booking> {
+    const { data, error } = await this.client.from(TABLE).insert(row).select("*").single();
     if (error) throw error;
     return rowToBooking(data);
   }

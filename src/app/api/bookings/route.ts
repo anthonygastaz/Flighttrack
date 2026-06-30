@@ -3,10 +3,19 @@ import { NextResponse } from "next/server";
 import { getServices } from "@/core/container";
 import { statusForError } from "@/core/domain/result";
 import { requireAdmin } from "@/lib/auth/admin";
-import { bookingFormSchema } from "@/lib/validation/booking-schema";
+import { bookingFormSchema, bookingFormValuesToInput } from "@/lib/validation/booking-schema";
 
 function toIso(value: string): string {
   return new Date(value).toISOString();
+}
+
+function toCreateInput(values: ReturnType<typeof bookingFormSchema.parse>) {
+  const mapped = bookingFormValuesToInput(values);
+  return {
+    ...mapped,
+    departureTime: toIso(mapped.departureTime),
+    arrivalTime: toIso(mapped.arrivalTime),
+  };
 }
 
 /** POST /api/bookings — create a booking (admin). */
@@ -29,31 +38,7 @@ export async function POST(request: Request) {
 
     const values = parsed.data;
     const services = getServices();
-    const result = await services.bookings.create({
-      passengerFirstName: values.passengerFirstName,
-      passengerLastName: values.passengerLastName,
-      email: values.email,
-      phone: values.phone,
-      airline: values.airline,
-      airlineIata: values.airlineIata,
-      flightNumber: values.flightNumber,
-      departureAirport: values.departureAirport,
-      arrivalAirport: values.arrivalAirport,
-      departureCity: values.departureCity,
-      arrivalCity: values.arrivalCity,
-      departureTerminal: values.departureTerminal,
-      arrivalTerminal: values.arrivalTerminal,
-      departureGate: values.departureGate,
-      arrivalGate: values.arrivalGate,
-      departureTime: toIso(values.departureTime),
-      arrivalTime: toIso(values.arrivalTime),
-      seat: values.seat,
-      travelClass: values.travelClass,
-      baggageAllowance: values.baggageAllowance,
-      status: values.status,
-      bookingSource: values.bookingSource,
-      notes: values.notes,
-    });
+    const result = await services.bookings.create(toCreateInput(values));
 
     if (!result.ok) {
       return NextResponse.json(

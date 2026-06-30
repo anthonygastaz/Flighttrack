@@ -7,7 +7,10 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { normalizeBookingReference } from "@/core/services/booking-reference-utils";
+import {
+  isValidBookingReference,
+  normalizeBookingReference,
+} from "@/core/services/booking-reference-utils";
 import { cn } from "@/lib/utils";
 
 interface BookingSearchBarProps {
@@ -29,7 +32,7 @@ export function BookingSearchBar({
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const normalized = normalizeBookingReference(query);
-    if (normalized.length < 2) return;
+    if (!isValidBookingReference(normalized)) return;
     router.push(`/booking/${encodeURIComponent(normalized)}`);
   }
 
@@ -51,13 +54,14 @@ export function BookingSearchBar({
         <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={query}
-          onChange={(e) => setQuery(e.target.value.toUpperCase())}
-          placeholder="Enter booking reference (e.g. FT93QK)"
+          onChange={(e) => setQuery(e.target.value.replace(/\D/g, "").slice(0, 13))}
+          placeholder="Enter 13-digit booking reference"
+          inputMode="numeric"
           className={cn(
-            "pl-11 font-mono uppercase tracking-widest",
+            "pl-11 font-mono tracking-widest",
             isLarge ? "h-14 rounded-xl text-base" : "h-11 rounded-lg",
           )}
-          maxLength={12}
+          maxLength={13}
           autoFocus={autoFocus}
           aria-label="Booking reference"
         />

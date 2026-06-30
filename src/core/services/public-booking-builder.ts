@@ -58,6 +58,22 @@ export function buildPublicBooking(input: PublicBookingValues): CreateBookingInp
     status: "confirmed",
     bookingSource: "demo",
     notes: input.tripType === "round-trip" ? `Return requested: ${input.returnDate}` : null,
+    stops: 0,
+    layovers: [],
+    billingName: null,
+    billingEmail: null,
+    billingPhone: null,
+    billingAddressLine1: null,
+    billingAddressLine2: null,
+    billingCity: null,
+    billingState: null,
+    billingPostalCode: null,
+    billingCountry: null,
+    paymentMethod: null,
+    fareSubtotal: null,
+    taxesFees: null,
+    totalPrice: null,
+    currency: "USD",
   };
 }
 

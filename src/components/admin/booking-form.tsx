@@ -3,8 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useTransition } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,28 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
     defaultValues,
   });
 
+  const stops = form.watch("stops") ?? 0;
+  const { fields: layoverFields, replace: replaceLayovers } = useFieldArray({
+    control: form.control,
+    name: "layovers",
+  });
+
+  useEffect(() => {
+    const current = form.getValues("layovers") ?? [];
+    if (current.length === stops) return;
+
+    if (current.length < stops) {
+      const next = [...current];
+      while (next.length < stops) {
+        next.push({ airport: "", city: "", durationHours: 1, durationMinutes: 0 });
+      }
+      replaceLayovers(next);
+      return;
+    }
+
+    replaceLayovers(current.slice(0, stops));
+  }, [stops, form, replaceLayovers]);
+
   function onSubmit(values: BookingFormInput) {
     startTransition(async () => {
       const result =
@@ -90,6 +112,42 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <section className="space-y-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
+            Booking code
+          </h3>
+          <FormField
+            control={form.control}
+            name="bookingReference"
+            render={({ field }) => (
+              <FormItem className="max-w-md">
+                <FormLabel>
+                  {mode === "edit" ? "Booking code" : "Booking code (optional)"}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    inputMode="numeric"
+                    placeholder={mode === "edit" ? "13-digit booking code" : "Auto-generated if left blank"}
+                    className="font-mono tracking-widest"
+                    maxLength={13}
+                    onChange={(event) =>
+                      field.onChange(event.target.value.replace(/\D/g, "").slice(0, 13))
+                    }
+                  />
+                </FormControl>
+                <p className="text-xs text-zinc-500">
+                  {mode === "edit"
+                    ? "Changing this updates the code passengers use to track the booking."
+                    : "Leave blank to generate a unique 13-digit code automatically."}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </section>
+
         <section className="space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
             Passenger
@@ -304,6 +362,346 @@ export function BookingForm({ bookingId, defaultValues, mode }: BookingFormProps
                   <FormLabel>Arrival time</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
+            Stops & layovers
+          </h3>
+          <FormField
+            control={form.control}
+            name="stops"
+            render={({ field }) => (
+              <FormItem className="max-w-xs">
+                <FormLabel>Number of stops</FormLabel>
+                <Select
+                  onValueChange={(value) => field.onChange(Number(value))}
+                  value={String(field.value ?? 0)}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select stops" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="0">Non-stop</SelectItem>
+                    <SelectItem value="1">1 stop</SelectItem>
+                    <SelectItem value="2">2 stops</SelectItem>
+                    <SelectItem value="3">3 stops</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {stops > 0 ? (
+            <div className="space-y-4">
+              {layoverFields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="rounded-xl border border-zinc-200/80 bg-zinc-50/60 p-4"
+                >
+                  <p className="mb-3 text-sm font-medium text-zinc-700">Layover {index + 1}</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name={`layovers.${index}.airport`}
+                      render={({ field: layoverField }) => (
+                        <FormItem>
+                          <FormLabel>Layover airport</FormLabel>
+                          <FormControl>
+                            <Input placeholder="DXB" className="uppercase" {...layoverField} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`layovers.${index}.city`}
+                      render={({ field: layoverField }) => (
+                        <FormItem>
+                          <FormLabel>Layover city</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Dubai" {...layoverField} value={layoverField.value ?? ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`layovers.${index}.durationHours`}
+                      render={({ field: layoverField }) => (
+                        <FormItem>
+                          <FormLabel>Layover hours</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={48}
+                              {...layoverField}
+                              value={layoverField.value ?? 0}
+                              onChange={(event) => layoverField.onChange(event.target.value)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`layovers.${index}.durationMinutes`}
+                      render={({ field: layoverField }) => (
+                        <FormItem>
+                          <FormLabel>Layover minutes</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={59}
+                              {...layoverField}
+                              value={layoverField.value ?? 0}
+                              onChange={(event) => layoverField.onChange(event.target.value)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
+            Billing information
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="billingName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Billing name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Full name on card" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Billing email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="billing@email.com"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Billing phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+1 555 0100" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="paymentMethod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment method</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Visa ending 4242" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingAddressLine1"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Address line 1</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123 Main Street" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingAddressLine2"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Address line 2</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Apt 4B" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingCity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>City</FormLabel>
+                  <FormControl>
+                    <Input placeholder="London" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingState"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>State / region</FormLabel>
+                  <FormControl>
+                    <Input placeholder="CA" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingPostalCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Postal code</FormLabel>
+                  <FormControl>
+                    <Input placeholder="94105" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="billingCountry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Country</FormLabel>
+                  <FormControl>
+                    <Input placeholder="United States" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
+            Flight price details
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Currency</FormLabel>
+                  <FormControl>
+                    <Input placeholder="USD" className="uppercase" {...field} value={field.value ?? "USD"} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="fareSubtotal"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fare / fee subtotal</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="6040.99"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => field.onChange(event.target.value)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="taxesFees"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Taxes &amp; fees</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="543.69"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => field.onChange(event.target.value)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="totalPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Total price</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="6584.68"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => field.onChange(event.target.value)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

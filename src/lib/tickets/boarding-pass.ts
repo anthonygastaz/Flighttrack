@@ -1,7 +1,7 @@
 import { differenceInMinutes, format, parseISO } from "date-fns";
 
 import type { Booking } from "@/core/domain/booking";
-import { passengerFullName } from "@/core/domain/booking";
+import { formatLayoverDuration, passengerFullName, stopsLabel } from "@/core/domain/booking";
 import { TRAVEL_CLASS_LABELS } from "@/core/domain/enums";
 import { findAirportByIata } from "@/lib/airports/search";
 import { formatTime } from "@/lib/format";
@@ -18,6 +18,8 @@ export interface BoardingPassData {
   arrivalLocation: string;
   arrivalTime: string;
   durationLabel: string;
+  stopsLabel: string;
+  layoverSummary: string | null;
   checkIn: string;
   gate: string;
   seats: string;
@@ -72,6 +74,16 @@ export function boardingPassFromBooking(booking: Booking): BoardingPassData {
     arrivalLocation: airportLocation(booking.arrivalAirport, booking.arrivalCity),
     arrivalTime: formatTime(booking.arrivalTime),
     durationLabel: formatDurationLabel(booking.departureTime, booking.arrivalTime),
+    stopsLabel: stopsLabel(booking.stops),
+    layoverSummary:
+      booking.layovers.length > 0
+        ? booking.layovers
+            .map(
+              (layover) =>
+                `via ${layover.airport}${layover.city ? ` (${layover.city})` : ""} · ${formatLayoverDuration(layover.durationMinutes)}`,
+            )
+            .join(" · ")
+        : null,
     checkIn: booking.departureGate ?? "—",
     gate: booking.departureTerminal ?? "—",
     seats: booking.seat ?? "—",

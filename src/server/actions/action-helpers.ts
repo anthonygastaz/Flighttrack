@@ -16,6 +16,10 @@ export async function withAdmin<T>(fn: () => Promise<Result<T>>): Promise<Result
     if (error instanceof AuthorizationError) {
       return err(error.reason, error.message);
     }
+    if (error instanceof Error) {
+      console.error("[server-action] unexpected error", error);
+      return err("internal_error", error.message || "Something went wrong. Please try again.");
+    }
     console.error("[server-action] unexpected error", error);
     return err("internal_error", "Something went wrong. Please try again.");
   }

@@ -99,7 +99,12 @@ export const BoardingPassTicket = forwardRef<HTMLDivElement, BoardingPassTicketP
                   <span className="h-px flex-1 border-t border-dashed border-zinc-300" />
                 </div>
                 <p className="text-[10px] font-medium text-zinc-500">{data.durationLabel}</p>
-                <p className="text-[10px] text-zinc-400">Non-stop</p>
+                <p className="text-[10px] text-zinc-400">{data.stopsLabel}</p>
+                {data.layoverSummary ? (
+                  <p className="mt-0.5 max-w-[7rem] text-center text-[10px] leading-tight text-zinc-400">
+                    {data.layoverSummary}
+                  </p>
+                ) : null}
               </div>
 
               <div className="text-right">

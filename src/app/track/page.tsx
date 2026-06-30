@@ -19,7 +19,7 @@ export default function TrackPage() {
             <div className="text-center">
               <h1 className="text-3xl font-bold tracking-tight">Track your booking</h1>
               <p className="mt-3 text-muted-foreground">
-                Enter your 6-character booking reference to view your itinerary.
+                Enter your 13-digit booking reference to view your itinerary.
               </p>
             </div>
             <div className="mt-10">

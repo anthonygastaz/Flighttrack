@@ -19,8 +19,8 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { reference } = await params;
   return {
-    title: `Boarding Pass · ${reference.toUpperCase()}`,
-    description: `E-ticket and boarding pass for booking ${reference.toUpperCase()}.`,
+    title: `Trip Details · ${reference}`,
+    description: `Track your flight and view your e-ticket for booking ${reference}.`,
   };
 }
 
@@ -55,9 +55,7 @@ export default async function BookingDetailsPage({ params }: PageProps) {
 
   if (result.type === "booking") {
     return (
-      <div className="relative min-h-screen">
-        <BookingBoardingPassView booking={result.booking} />
-      </div>
+      <BookingBoardingPassView booking={result.booking} liveFlight={result.flight} />
     );
   }
 

@@ -4,6 +4,7 @@ import type {
   FlightStatus,
   TravelClass,
 } from "@/core/domain/enums";
+import type { Layover } from "@/core/domain/booking";
 
 /**
  * Database schema types matching the SQL migrations. Hand-authored to stay in
@@ -41,9 +42,25 @@ export interface BookingRow {
   seat: string | null;
   travel_class: TravelClass;
   baggage_allowance: string | null;
+  billing_name: string | null;
+  billing_email: string | null;
+  billing_phone: string | null;
+  billing_address_line1: string | null;
+  billing_address_line2: string | null;
+  billing_city: string | null;
+  billing_state: string | null;
+  billing_postal_code: string | null;
+  billing_country: string | null;
+  payment_method: string | null;
+  fare_subtotal: number | string | null;
+  taxes_fees: number | string | null;
+  total_price: number | string | null;
+  currency: string;
   status: BookingStatus;
   booking_source: BookingSource;
   notes: string | null;
+  stops: number;
+  layovers: Layover[];
   created_at: string;
   updated_at: string;
 }
@@ -71,9 +88,25 @@ export type BookingInsert = {
   seat?: string | null;
   travel_class: TravelClass;
   baggage_allowance?: string | null;
+  billing_name?: string | null;
+  billing_email?: string | null;
+  billing_phone?: string | null;
+  billing_address_line1?: string | null;
+  billing_address_line2?: string | null;
+  billing_city?: string | null;
+  billing_state?: string | null;
+  billing_postal_code?: string | null;
+  billing_country?: string | null;
+  payment_method?: string | null;
+  fare_subtotal?: number | null;
+  taxes_fees?: number | null;
+  total_price?: number | null;
+  currency?: string;
   status: BookingStatus;
   booking_source?: BookingSource;
   notes?: string | null;
+  stops?: number;
+  layovers?: Layover[];
   created_at?: string;
   updated_at?: string;
 };
@@ -100,9 +133,25 @@ export type BookingUpdate = {
   seat?: string | null;
   travel_class?: TravelClass;
   baggage_allowance?: string | null;
+  billing_name?: string | null;
+  billing_email?: string | null;
+  billing_phone?: string | null;
+  billing_address_line1?: string | null;
+  billing_address_line2?: string | null;
+  billing_city?: string | null;
+  billing_state?: string | null;
+  billing_postal_code?: string | null;
+  billing_country?: string | null;
+  payment_method?: string | null;
+  fare_subtotal?: number | null;
+  taxes_fees?: number | null;
+  total_price?: number | null;
+  currency?: string;
   status?: BookingStatus;
   booking_source?: BookingSource;
   notes?: string | null;
+  stops?: number;
+  layovers?: Layover[];
 };
 
 export interface FlightRow {

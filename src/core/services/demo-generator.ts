@@ -33,10 +33,14 @@ export function generateDemoBooking(): CreateBookingInput {
   departure.setHours(randomInt(5, 22), pick([0, 15, 30, 45]), 0, 0);
 
   const arrival = new Date(departure.getTime() + randomInt(90, 14 * 60) * 60 * 1000);
+  const firstName = pick(FIRST_NAMES);
+  const lastName = pick(LAST_NAMES);
+  const fareSubtotal = randomInt(250, 1800);
+  const taxesFees = Math.round(fareSubtotal * 0.12 * 100) / 100;
 
   return {
-    passengerFirstName: pick(FIRST_NAMES),
-    passengerLastName: pick(LAST_NAMES),
+    passengerFirstName: firstName,
+    passengerLastName: lastName,
     email: null,
     phone: null,
     airline: airline.name,
@@ -58,5 +62,21 @@ export function generateDemoBooking(): CreateBookingInput {
     status: pick(STATUSES),
     bookingSource: "demo",
     notes: null,
+    stops: 0,
+    layovers: [],
+    billingName: `${firstName} ${lastName}`,
+    billingEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+    billingPhone: `+1 555 ${randomInt(100, 999)} ${randomInt(1000, 9999)}`,
+    billingAddressLine1: `${randomInt(100, 9999)} Main Street`,
+    billingAddressLine2: null,
+    billingCity: pick(["London", "New York", "Singapore", "Dubai"]),
+    billingState: pick(["CA", "NY", "TX", "ENG"]),
+    billingPostalCode: String(randomInt(10000, 99999)),
+    billingCountry: pick(["United States", "United Kingdom", "UAE"]),
+    paymentMethod: pick(["Visa ending 4242", "Mastercard ending 8210", "American Express ending 1005"]),
+    fareSubtotal,
+    taxesFees,
+    totalPrice: Math.round((fareSubtotal + taxesFees) * 100) / 100,
+    currency: "USD",
   };
 }

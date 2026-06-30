@@ -5,6 +5,7 @@ import { toDatetimeLocalValue } from "@/lib/format";
 /** Map a domain booking to form default values. */
 export function bookingToFormValues(booking: Booking): BookingFormInput {
   return {
+    bookingReference: booking.bookingReference,
     passengerFirstName: booking.passengerFirstName,
     passengerLastName: booking.passengerLastName,
     email: booking.email ?? "",
@@ -16,6 +17,13 @@ export function bookingToFormValues(booking: Booking): BookingFormInput {
     arrivalAirport: booking.arrivalAirport,
     departureCity: booking.departureCity ?? "",
     arrivalCity: booking.arrivalCity ?? "",
+    stops: booking.stops,
+    layovers: booking.layovers.map((layover) => ({
+      airport: layover.airport,
+      city: layover.city ?? "",
+      durationHours: Math.floor(layover.durationMinutes / 60),
+      durationMinutes: layover.durationMinutes % 60,
+    })),
     departureTerminal: booking.departureTerminal ?? "",
     arrivalTerminal: booking.arrivalTerminal ?? "",
     departureGate: booking.departureGate ?? "",
@@ -28,6 +36,20 @@ export function bookingToFormValues(booking: Booking): BookingFormInput {
     status: booking.status,
     bookingSource: booking.bookingSource,
     notes: booking.notes ?? "",
+    billingName: booking.billingName ?? "",
+    billingEmail: booking.billingEmail ?? "",
+    billingPhone: booking.billingPhone ?? "",
+    billingAddressLine1: booking.billingAddressLine1 ?? "",
+    billingAddressLine2: booking.billingAddressLine2 ?? "",
+    billingCity: booking.billingCity ?? "",
+    billingState: booking.billingState ?? "",
+    billingPostalCode: booking.billingPostalCode ?? "",
+    billingCountry: booking.billingCountry ?? "",
+    paymentMethod: booking.paymentMethod ?? "",
+    fareSubtotal: booking.fareSubtotal ?? "",
+    taxesFees: booking.taxesFees ?? "",
+    totalPrice: booking.totalPrice ?? "",
+    currency: booking.currency ?? "USD",
   };
 }
 
@@ -39,6 +61,7 @@ export function defaultBookingFormValues(): BookingFormInput {
   const arrival = new Date(departure.getTime() + 8 * 60 * 60 * 1000);
 
   return {
+    bookingReference: "",
     passengerFirstName: "",
     passengerLastName: "",
     email: "",
@@ -50,6 +73,8 @@ export function defaultBookingFormValues(): BookingFormInput {
     arrivalAirport: "",
     departureCity: "",
     arrivalCity: "",
+    stops: 0,
+    layovers: [],
     departureTerminal: "",
     arrivalTerminal: "",
     departureGate: "",
@@ -62,5 +87,19 @@ export function defaultBookingFormValues(): BookingFormInput {
     status: "confirmed",
     bookingSource: "demo",
     notes: "",
+    billingName: "",
+    billingEmail: "",
+    billingPhone: "",
+    billingAddressLine1: "",
+    billingAddressLine2: "",
+    billingCity: "",
+    billingState: "",
+    billingPostalCode: "",
+    billingCountry: "",
+    paymentMethod: "",
+    fareSubtotal: "",
+    taxesFees: "",
+    totalPrice: "",
+    currency: "USD",
   };
 }
