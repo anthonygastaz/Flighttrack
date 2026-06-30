@@ -37,7 +37,7 @@ import { TRAVEL_CLASS_LABELS, TRAVEL_CLASSES } from "@/core/domain/enums";
 import { AirportSearchInput } from "@/components/booking/airport-search-input";
 import { AirlineSearchInput } from "@/components/booking/airline-search-input";
 import { BoardingPassScreen } from "@/components/booking/boarding-pass-screen";
-import { SeatSelectionSheet } from "@/components/booking/seat-selection-sheet";
+import { SeatSelectionModal } from "@/components/booking/seat-selection-modal";
 import { SeatSelectionStep } from "@/components/booking/seat-selection-step";
 import type { Booking } from "@/core/domain/booking";
 import { boardingPassFromBooking } from "@/lib/tickets/boarding-pass";
@@ -81,7 +81,7 @@ export function FlightBookingWidget() {
   const adults = form.watch("adults");
   const selectedSeats = form.watch("seats") ?? [];
   const isMobile = useIsMobile();
-  const showSeatSheet = step === "seats" && isMobile;
+  const showSeatModal = step === "seats" && isMobile;
   const formStep = step === "seats" && isMobile ? "search" : step;
   const boardingPassData = useMemo(
     () => (confirmedBooking ? boardingPassFromBooking(confirmedBooking) : null),
@@ -103,7 +103,7 @@ export function FlightBookingWidget() {
               onContinue={onSeatsContinue}
               onBack={() => setStep("search")}
               error={form.formState.errors.seats?.message}
-              variant={showSeatSheet ? "sheet" : "default"}
+              variant={showSeatModal ? "modal" : "default"}
             />
           </FormControl>
         </FormItem>
@@ -148,9 +148,9 @@ export function FlightBookingWidget() {
   return (
     <Form {...form}>
       <div className="w-full overflow-hidden rounded-xl border border-white/10 bg-[#0a1628] shadow-2xl">
-        <SeatSelectionSheet open={showSeatSheet} onClose={() => setStep("search")}>
+        <SeatSelectionModal open={showSeatModal} onClose={() => setStep("search")}>
           {seatSelectionField}
-        </SeatSelectionSheet>
+        </SeatSelectionModal>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-b border-white/10 bg-[#0d1a30] p-0">

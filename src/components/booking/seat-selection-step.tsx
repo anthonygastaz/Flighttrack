@@ -30,8 +30,8 @@ interface SeatSelectionStepProps {
   onContinue: () => void;
   onBack: () => void;
   error?: string;
-  /** Mobile bottom sheet: pin actions to the sheet footer. */
-  variant?: "default" | "sheet";
+  /** Mobile modal: pin actions to the footer. */
+  variant?: "default" | "modal";
 }
 
 export function SeatSelectionStep({
@@ -86,13 +86,13 @@ export function SeatSelectionStep({
     <div
       className={cn(
         "text-zinc-900",
-        variant === "sheet" ? "flex min-h-0 flex-1 flex-col" : "space-y-5",
+        variant === "modal" ? "flex min-h-0 flex-1 flex-col" : "space-y-5",
       )}
     >
       <div
         className={cn(
           "space-y-5",
-          variant === "sheet" && "min-h-0 flex-1 overflow-y-auto",
+          variant === "modal" && "min-h-0 flex-1 overflow-y-auto",
         )}
       >
         <div className="flex items-center justify-between gap-3">
@@ -190,14 +190,14 @@ export function SeatSelectionStep({
         {error && variant === "default" && <p className="text-sm text-red-600">{error}</p>}
       </div>
 
-      {error && variant === "sheet" && (
+      {error && variant === "modal" && (
         <p className="shrink-0 px-0 pt-2 text-sm text-red-600">{error}</p>
       )}
 
       <div
         className={cn(
           "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-          variant === "sheet" && "shrink-0 border-t border-zinc-100 bg-white pt-3",
+          variant === "modal" && "shrink-0 border-t border-zinc-100 bg-white pt-3",
         )}
       >
         <Button
