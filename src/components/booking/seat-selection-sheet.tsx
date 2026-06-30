@@ -57,7 +57,7 @@ export function SeatSelectionSheet({
             aria-modal="true"
             aria-label="Choose seats"
             className={cn(
-              "absolute inset-x-0 bottom-0 flex max-h-[78vh] min-h-[70vh] flex-col rounded-t-2xl bg-white shadow-[0_-8px_40px_rgba(0,0,0,0.18)]",
+              "absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-2xl bg-white shadow-[0_-8px_40px_rgba(0,0,0,0.18)]",
               className,
             )}
             initial={{ y: "100%" }}
@@ -68,7 +68,7 @@ export function SeatSelectionSheet({
             <div className="flex shrink-0 justify-center pb-1 pt-3">
               <div className="h-1 w-10 rounded-full bg-zinc-300" aria-hidden />
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-8 pt-2">
+            <div className="flex min-h-0 flex-1 flex-col px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
               {children}
             </div>
           </motion.div>

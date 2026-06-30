@@ -148,4 +148,32 @@
     filter: brightness(0.98);
     transform: scale(0.99);
   }
+
+  /* Native date inputs on mobile: prevent overflow and left-align the value */
+  .booking-date-input {
+    @apply min-w-0 max-w-full text-left;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .booking-date-input::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
+  .booking-date-input::-webkit-datetime-edit {
+    text-align: left;
+    padding: 0;
+  }
+
+  .booking-date-input::-webkit-datetime-edit-fields-wrapper {
+    text-align: left;
+  }
+
+  .booking-date-input::-webkit-calendar-picker-indicator {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
 }

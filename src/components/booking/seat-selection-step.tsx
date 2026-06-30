@@ -30,6 +30,8 @@ interface SeatSelectionStepProps {
   onContinue: () => void;
   onBack: () => void;
   error?: string;
+  /** Mobile bottom sheet: pin actions to the sheet footer. */
+  variant?: "default" | "sheet";
 }
 
 export function SeatSelectionStep({
@@ -40,6 +42,7 @@ export function SeatSelectionStep({
   onContinue,
   onBack,
   error,
+  variant = "default",
 }: SeatSelectionStepProps) {
   const [activeSectionId, setActiveSectionId] = useState(() => sectionForTravelClass(travelClass));
 
@@ -80,102 +83,123 @@ export function SeatSelectionStep({
       : `Select ${adults} seats (${value.length}/${adults})`;
 
   return (
-    <div className="space-y-5 text-zinc-900">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+    <div
+      className={cn(
+        "text-zinc-900",
+        variant === "sheet" ? "flex min-h-0 flex-1 flex-col" : "space-y-5",
+      )}
+    >
+      <div
+        className={cn(
+          "space-y-5",
+          variant === "sheet" && "min-h-0 flex-1 overflow-y-auto",
+        )}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex size-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-50 md:hidden"
+              aria-label="Back to search"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">Choose Seats</h2>
+          </div>
           <button
             type="button"
             onClick={onBack}
-            className="flex size-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-50 md:hidden"
-            aria-label="Back to search"
+            className="hidden text-sm text-zinc-500 transition-colors hover:text-zinc-900 md:inline-flex md:items-center md:gap-1"
           >
-            <ChevronLeft className="size-5" />
+            <ChevronLeft className="size-4" />
+            Edit trip
           </button>
-          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">Choose Seats</h2>
         </div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="hidden text-sm text-zinc-500 transition-colors hover:text-zinc-900 md:inline-flex md:items-center md:gap-1"
-        >
-          <ChevronLeft className="size-4" />
-          Edit trip
-        </button>
-      </div>
 
-      <AirplaneSilhouette activeSection={activeSectionId} />
+        <AirplaneSilhouette activeSection={activeSectionId} />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm text-zinc-500">Sections</span>
-        <div className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 p-1">
-          {CABIN_SECTIONS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setActiveSectionId(s.id)}
-              className={cn(
-                "min-w-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
-                activeSectionId === s.id
-                  ? "text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900",
-              )}
-              style={
-                activeSectionId === s.id ? { backgroundColor: SKY_BLUE } : undefined
-              }
-            >
-              {s.id}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm text-zinc-500">Sections</span>
+          <div className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 p-1">
+            {CABIN_SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setActiveSectionId(s.id)}
+                className={cn(
+                  "min-w-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                  activeSectionId === s.id
+                    ? "text-white shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-900",
+                )}
+                style={
+                  activeSectionId === s.id ? { backgroundColor: SKY_BLUE } : undefined
+                }
+              >
+                {s.id}
+              </button>
+            ))}
+          </div>
+          <span className="text-xs text-zinc-400 sm:ml-auto">{selectionHint}</span>
         </div>
-        <span className="text-xs text-zinc-400 sm:ml-auto">{selectionHint}</span>
-      </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-medium text-zinc-800">
-            {section.title} ({section.classLabel})
-          </p>
-          <div className="flex items-center gap-4 text-xs text-zinc-500">
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full" style={{ backgroundColor: SKY_BLUE }} />
-              Free
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-zinc-200" />
-              Booked
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span
-                className="size-2.5 rounded-full ring-2 ring-[#4D94FF] ring-offset-1"
-                style={{ backgroundColor: SKY_BLUE_DARK }}
-              />
-              Yours
-            </span>
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-medium text-zinc-800">
+              {section.title} ({section.classLabel})
+            </p>
+            <div className="flex items-center gap-4 text-xs text-zinc-500">
+              <span className="flex items-center gap-1.5">
+                <span className="size-2.5 rounded-full" style={{ backgroundColor: SKY_BLUE }} />
+                Free
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="size-2.5 rounded-full bg-zinc-200" />
+                Booked
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span
+                  className="size-2.5 rounded-full ring-2 ring-[#4D94FF] ring-offset-1"
+                  style={{ backgroundColor: SKY_BLUE_DARK }}
+                />
+                Yours
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto pb-1">
+            <SeatMap
+              section={section}
+              occupied={occupied}
+              selected={value}
+              onToggle={toggleSeat}
+            />
           </div>
         </div>
 
-        <div className="overflow-x-auto pb-1">
-          <SeatMap
-            section={section}
-            occupied={occupied}
-            selected={value}
-            onToggle={toggleSeat}
-          />
-        </div>
+        {value.length > 0 && (
+          <p className="text-sm text-zinc-600">
+            Selected:{" "}
+            <span className="font-medium" style={{ color: SKY_BLUE }}>
+              {value.join(", ")}
+            </span>
+          </p>
+        )}
+
+        {error && variant === "default" && <p className="text-sm text-red-600">{error}</p>}
       </div>
 
-      {value.length > 0 && (
-        <p className="text-sm text-zinc-600">
-          Selected:{" "}
-          <span className="font-medium" style={{ color: SKY_BLUE }}>
-            {value.join(", ")}
-          </span>
-        </p>
+      {error && variant === "sheet" && (
+        <p className="shrink-0 px-0 pt-2 text-sm text-red-600">{error}</p>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <div
+        className={cn(
+          "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+          variant === "sheet" && "shrink-0 border-t border-zinc-100 bg-white pt-3",
+        )}
+      >
         <Button
           type="button"
           variant="outline"

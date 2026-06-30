@@ -103,6 +103,7 @@ export function FlightBookingWidget() {
               onContinue={onSeatsContinue}
               onBack={() => setStep("search")}
               error={form.formState.errors.seats?.message}
+              variant={showSeatSheet ? "sheet" : "default"}
             />
           </FormControl>
         </FormItem>
@@ -237,7 +238,7 @@ export function FlightBookingWidget() {
                             ? form.handleSubmit(onBookSubmit)
                             : (e) => e.preventDefault()
                       }
-                      className="space-y-5"
+                      className="min-w-0 space-y-5"
                     >
                       {formStep === "search" ? (
                         <>
@@ -262,12 +263,12 @@ export function FlightBookingWidget() {
                             ))}
                           </div>
 
-                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                          <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
                             <FormField
                               control={form.control}
                               name="from"
                               render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="min-w-0">
                                   <FormLabel className="text-white/70">From</FormLabel>
                                   <FormControl>
                                     <AirportSearchInput
@@ -284,7 +285,7 @@ export function FlightBookingWidget() {
                               control={form.control}
                               name="to"
                               render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="min-w-0">
                                   <FormLabel className="text-white/70">To</FormLabel>
                                   <FormControl>
                                     <AirportSearchInput
@@ -297,16 +298,24 @@ export function FlightBookingWidget() {
                                 </FormItem>
                               )}
                             />
+                          </div>
+
+                          <div
+                            className={cn(
+                              "grid min-w-0 gap-4",
+                              tripType === "round-trip" ? "grid-cols-2" : "grid-cols-1",
+                            )}
+                          >
                             <FormField
                               control={form.control}
                               name="departureDate"
                               render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="min-w-0">
                                   <FormLabel className="text-white/70">Departure</FormLabel>
                                   <FormControl>
                                     <Input
                                       type="date"
-                                      className="border-white/20 bg-white/10 text-white [color-scheme:dark]"
+                                      className="booking-date-input border-white/20 bg-white/10 text-white [color-scheme:dark]"
                                       {...field}
                                     />
                                   </FormControl>
@@ -319,12 +328,12 @@ export function FlightBookingWidget() {
                                 control={form.control}
                                 name="returnDate"
                                 render={({ field }) => (
-                                  <FormItem>
+                                  <FormItem className="min-w-0">
                                     <FormLabel className="text-white/70">Return</FormLabel>
                                     <FormControl>
                                       <Input
                                         type="date"
-                                        className="border-white/20 bg-white/10 text-white [color-scheme:dark]"
+                                        className="booking-date-input border-white/20 bg-white/10 text-white [color-scheme:dark]"
                                         {...field}
                                         value={field.value ?? ""}
                                       />
@@ -336,7 +345,7 @@ export function FlightBookingWidget() {
                             )}
                           </div>
 
-                          <div className="grid gap-4 sm:grid-cols-3">
+                          <div className="grid min-w-0 gap-4 sm:grid-cols-3">
                             <FormField
                               control={form.control}
                               name="airlineIata"
@@ -413,7 +422,7 @@ export function FlightBookingWidget() {
                               className="h-12 rounded-full bg-[#051024] px-8 text-white hover:bg-[#051024]/90"
                             >
                               <Search className="size-4" />
-                              Search flights
+                              Choose seats
                             </Button>
                           </div>
                         </>
